@@ -1,5 +1,6 @@
 {
-  "ARTWORK_SIZE": "1000",
-  "DEFAULT_AUDIO_FORMAT": "m4a",
-  "MUSIC_FOLDER": "~/Music/Music/Media.localized/Automatically Add to Music.localized/"
+	"ARTWORK_SIZE": "1000",
+	"ARTWORK_FORMAT": "jpg",
+	"DEFAULT_AUDIO_FORMAT": "m4a",
+	"MUSIC_FOLDER": "~/Music/Music/Media.localized/Automatically Add to Music.localized/"
 }
