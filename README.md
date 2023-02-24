@@ -1,8 +1,7 @@
-# myousic
+<h1 style="color:#7777ff">myousic</h1>
 
 JS script to recognise and download music you want!
 
-- [myousic](#myousic)
 - [Introduction](#introduction)
 - [Instalation](#instalation)
   - [Tools](#tools)
