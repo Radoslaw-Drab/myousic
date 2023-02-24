@@ -10,6 +10,8 @@ JS script to recognise and download music you want!
 - [Usage](#usage)
   - [General options](#general-options)
 - [Examples](#examples)
+- [Configuration](#configuration)
+  - [Options](#options)
 - [Used tools](#used-tools)
 
 # Introduction
@@ -137,6 +139,23 @@ Download song based on url with clipboard and opens lyrics and artwork (Data in 
 ```bash
 node myousic.js --url --download --open
 ```
+
+# Configuration
+
+You can configure some options inside of `settings.json` file
+
+## Options
+
+| Option               | Description                                                      |
+| -------------------- | ---------------------------------------------------------------- |
+| ARTWORK_SIZE         | Size of artwork you would want your music to have (default 1000) |
+| ARTWORK_FORMAT       | Format of artwork (default jpg)                                  |
+| DEFAULT_AUDIO_FORMAT | Format of artwork (default m4a)                                  |
+| MUSIC_FOLDER         | Folder where music will be saved (default ~/Downloads/)          |
+
+<br>
+
+In order to add files automatically to Apple Music locate folder named _Automatically Add To Music.localized_ and change `MUSIC_FOLDER` to path of this folder.
 
 # Used tools
 
