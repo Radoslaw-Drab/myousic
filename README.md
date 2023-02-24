@@ -13,6 +13,7 @@ JS script to recognise and download music you want!
 - [Configuration](#configuration)
   - [Options](#options)
 - [Used tools](#used-tools)
+- [Notes](#notes)
 
 # Introduction
 
@@ -161,3 +162,11 @@ In order to add files automatically to Apple Music locate folder named _Automati
 
 - VSCode
 - [iTunes API](https://performance-partners.apple.com/search-api)
+
+# Notes
+
+For now script is optimised for MacOS only, however I'll try my best to make it available for Windows
+
+<br>
+
+Happy listening! 😁
