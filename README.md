@@ -78,17 +78,68 @@ node myousic.js --search "Linkin Park - Lost"
 
 <br>
 
-| Option          | Argument | Description                                                                                                                                    |
-| --------------- | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
-| `--search`      | Yes      | Searches for data based on input e.g. artist name and song title                                                                               |
-| `--url`         | Yes      | Searches for data based on YouTube link                                                                                                        |
-| `--limit`       | Yes      | Limits search (default 100, max 200)                                                                                                           |
-| `--clipboard`   | No       | Searches for data based on data inside of a clipboard                                                                                          |
-| `--open`        | No       | When song is found opens artwork and lyrics inside of default browser                                                                          |
-| `--open-lyrics` | No       | When song is found opens only lyrics inside of default browser                                                                                 |
-| `--open-image`  | No       | When song is found opens only artwork inside of default browser                                                                                |
-| `--url`         | No       | Searches for data based on YouTube link in clipboard                                                                                           |
-| `--download`    | No       | Downloads music, changes metadata and moves to set folder. Works only with YouTube links, which means you have to use `--url` with this option |
+<table style="width:100%">
+  <tr>
+    <th style="width:20%">Option</th>
+    <th>Argument</th>
+    <th>Description</th>
+  </tr>
+  <tr>
+    <td><code>--search</code></td>
+    <td>string</td>
+    <td>Searches for data based on input e.g. artist name and song title</td>
+  </tr>
+  <tr>
+    <td><code>--url</code></td>
+    <td>string</td>
+    <td>Searches for data based on YouTube link</td>
+  </tr>
+  <tr>
+    <td><code>--limit</code></td>
+    <td>number</td>
+    <td>Limits search (default 100, max 200)</td>
+  </tr>
+  <tr>
+    <td><code>--sort-[TYPE]</code></td>
+    <td><i>'asc'</i><i>'desc'</i></td>
+    <td>Sorts output songs. <code>[TYPE]</code>: <i>'artist'</i>, <i>'track'</i>, <i>'album'</i>, <i>'year'</i></td>
+  </tr>
+  <tr>
+    <td><code>--[TYPE]</code></td>
+    <td>string</td>
+    <td>Filters based on argument. <code>[TYPE]</code>: <i>'artist'</i>, <i>'track'</i>, <i>'album'</i>, <i>'year'</i></td>
+  </tr>
+  <tr>
+    <td><code>--clipboard</code></td>
+    <td>-</td>
+    <td>Searches for data based on data inside of a clipboard</td>
+  </tr>
+  <tr>
+    <td><code>--open</code></td>
+    <td>-</td>
+    <td>When song is found opens artwork and lyrics inside of default browser</td>
+  </tr>
+  <tr>
+    <td><code>--open-lyrics</code></td>
+    <td>-</td>
+    <td>When song is found opens only lyrics inside of default browser</td>
+  </tr>
+  <tr>
+    <td><code>--open-image</code></td>
+    <td>-</td>
+    <td>When song is found opens only artwork inside of default browser</td>
+  </tr>
+  <tr>
+    <td><code>--url</code></td>
+    <td>-</td>
+    <td>Searches for data based on YouTube link in clipboard</td>
+  </tr>
+  <tr>
+    <td><code>--download</code></td>
+    <td>-</td>
+    <td>Downloads music, changes metadata and moves to set folder. Works only with YouTube links, which means you have to use <code>--url</code> with this option</td>
+  </tr>
+</table>
 
 # Examples
 
