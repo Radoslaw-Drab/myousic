@@ -101,13 +101,13 @@ node myousic.js --search "Linkin Park - Lost"
   </tr>
   <tr>
     <td><code>--sort-[TYPE]</code></td>
-    <td><i>'asc'</i>, <i>'desc'</i></td>
-    <td>Sorts output songs. <code>[TYPE]</code>: <i>'artist'</i>, <i>'track'</i>, <i>'album'</i>, <i>'year'</i></td>
+    <td><i>asc</i>, <i>desc</i></td>
+    <td>Sorts output songs. <code>[TYPE]</code>: <i>artist</i>, <i>track</i>, <i>album</i>, <i>year</i></td>
   </tr>
   <tr>
     <td><code>--[TYPE]</code></td>
     <td>string</td>
-    <td>Filters based on argument. <code>[TYPE]</code>: <i>'artist'</i>, <i>'track'</i>, <i>'album'</i>, <i>'year'</i>. Note you still need to use `--search`</td>
+    <td>Filters based on argument. <code>[TYPE]</code>: <i>artist</i>, <i>track</i>, <i>album</i>, <i>year</i>. Note you still need to use `--search`</td>
   </tr>
   <tr>
     <td><code>--clipboard</code></td>
@@ -197,7 +197,7 @@ Sorts based on track in an ascending way
 node myousic.js --search Linkin Park --sort-track asc
 ```
 
-Sorts based on year in an desceding way
+Sorts based on year in an descending way
 
 ```bash
 node myousic.js --search Linkin Park --sort-year desc
