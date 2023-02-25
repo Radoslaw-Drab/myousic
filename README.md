@@ -80,7 +80,7 @@ node myousic.js --search "Linkin Park - Lost"
 
 <table style="width:100%">
   <tr>
-    <th style="width:20%">Option</th>
+    <th style="width:30%">Option</th>
     <th>Argument</th>
     <th>Description</th>
   </tr>
@@ -101,13 +101,13 @@ node myousic.js --search "Linkin Park - Lost"
   </tr>
   <tr>
     <td><code>--sort-[TYPE]</code></td>
-    <td><i>'asc'</i><i>'desc'</i></td>
+    <td><i>'asc'</i>, <i>'desc'</i></td>
     <td>Sorts output songs. <code>[TYPE]</code>: <i>'artist'</i>, <i>'track'</i>, <i>'album'</i>, <i>'year'</i></td>
   </tr>
   <tr>
     <td><code>--[TYPE]</code></td>
     <td>string</td>
-    <td>Filters based on argument. <code>[TYPE]</code>: <i>'artist'</i>, <i>'track'</i>, <i>'album'</i>, <i>'year'</i></td>
+    <td>Filters based on argument. <code>[TYPE]</code>: <i>'artist'</i>, <i>'track'</i>, <i>'album'</i>, <i>'year'</i>. Note you still need to use `--search`</td>
   </tr>
   <tr>
     <td><code>--clipboard</code></td>
@@ -191,6 +191,30 @@ Download song based on url with clipboard and opens lyrics and artwork (Data in 
 node myousic.js --url --download --open
 ```
 
+Sorts based on track in an ascending way
+
+```bash
+node myousic.js --search Linkin Park --sort-track asc
+```
+
+Sorts based on year in an desceding way
+
+```bash
+node myousic.js --search Linkin Park --sort-year desc
+```
+
+Filters output which contains _'Linkin Park'_ as an artist.
+
+```bash
+node myousic.js --search Linkin Park --artist Linkin Park
+```
+
+Filters output which contains by _'Linkin Park'_ and was published in 2003.
+
+```bash
+node myousic.js --search Linkin Park --year 2003
+```
+
 # Configuration
 
 You can configure some options inside of `settings.json` file
@@ -203,6 +227,7 @@ You can configure some options inside of `settings.json` file
 | ARTWORK_FORMAT       | Format of artwork (default jpg)                                  |
 | DEFAULT_AUDIO_FORMAT | Format of artwork (default m4a)                                  |
 | MUSIC_FOLDER         | Folder where music will be saved (default ~/Downloads/)          |
+| DEFAULT_LIMIT        | Default limit which will be set if not `--limit` option is set   |
 
 <br>
 
