@@ -38,7 +38,7 @@ Tools to install:
 
 1. [NodeJS](https://nodejs.org/en/)
 2. [yt-dlp](https://github.com/yt-dlp/yt-dlp) (for downloading)
-3. [exiftool](https://exiftool.org/) ([GitHub](https://github.com/exiftool/exiftool)) (for editting metadata)
+3. [exiftool](https://exiftool.org/) ([GitHub](https://github.com/exiftool/exiftool)) (for editing metadata)
 
 ## Download
 
