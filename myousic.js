@@ -4,7 +4,19 @@ const { copyrights, lineBreaker, question, errorPrompt, getCommands, readline } 
 const BASE_URL = 'https://itunes.apple.com/search'
 // prettier-ignore
 const KEYWORDS = ["clipboard", "open", "open-lyrics", "open-image", "url", "download"];
-const KEYWORD_VALUES = ['search', 'url', 'limit', 'sort']
+const KEYWORD_VALUES = [
+	'search',
+	'url',
+	'limit',
+	'sort-artist',
+	'sort-track',
+	'sort-album',
+	'sort-year',
+	'artist',
+	'track',
+	'album',
+	'year'
+]
 
 const SETTINGS = require('./settings.json')
 const ARTWORK_SIZE = SETTINGS.ARTWORK_SIZE || 1000
@@ -60,6 +72,44 @@ async function script() {
 			return response.json()
 		})
 		.then(async (data) => {
+			function sort(a, b) {
+				let searchType = 'trackName'
+				const sortOptions = ['asc', 'desc']
+				let sort = sortOptions[0]
+
+				let prop = ''
+				function setOptions(test, type) {
+					if (typeof properties[test] === 'string') {
+						prop = test
+						searchType = type
+					}
+				}
+				setOptions('sortAlbum', 'collectionName')
+				setOptions('sortYear', 'releaseDate')
+				setOptions('sortArtist', 'artistName')
+				setOptions('sortTrack', 'trackName')
+
+				if (typeof properties[prop] === 'string') {
+					sort = sortOptions.find((opt) => opt === properties[prop]) || sortOptions[0]
+				}
+
+				let sortDir = 1
+				if (sort === 'desc') {
+					sortDir *= -1
+				}
+
+				return a[searchType].localeCompare(b[searchType]) * sortDir
+			}
+			function filter(song) {
+				const { track, artist, album, year } = properties
+				const { trackName, artistName, collectionName, releaseDate } = song
+				const sameTrack = track ? trackName.toLowerCase().includes(track.toLowerCase()) : true
+				const sameArtist = artist ? artistName.toLowerCase().includes(artist.toLowerCase()) : true
+				const sameAlbum = album ? collectionName.toLowerCase().includes(album.toLowerCase()) : true
+				const sameYear = year ? (new Date(releaseDate).getFullYear().toString() || '').includes(year.toLowerCase()) : true
+				return sameTrack && sameArtist && sameAlbum && sameYear
+			}
+
 			if (!data) return
 
 			const results = data.results
@@ -81,10 +131,8 @@ async function script() {
 					maxWidth_collection = Math.round(availableWidth * 0.25)
 				}
 
-				const res = [...results].sort(sort)
-				// await question('')
-				// console.log(res)
-				// await question('')
+				const res = [...results].sort(sort).filter(filter)
+
 				res.unshift({})
 
 				const songs = res.reduce((prev, cur, id) => {
