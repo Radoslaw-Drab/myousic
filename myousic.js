@@ -1,12 +1,5 @@
 const { exec } = require('child_process')
-const {
-	copyrights,
-	lineBreaker,
-	question,
-	errorPrompt,
-	getCommands,
-	readline
-} = require('./utils')
+const { copyrights, lineBreaker, question, errorPrompt, getCommands, readline } = require('./utils')
 
 const BASE_URL = 'https://itunes.apple.com/search'
 // prettier-ignore
@@ -16,10 +9,10 @@ const KEYWORD_VALUES = ['search', 'url', 'limit', 'sort']
 const SETTINGS = require('./settings.json')
 const ARTWORK_SIZE = SETTINGS.ARTWORK_SIZE || 1000
 const DEFAULT_AUDIO_FORMAT = SETTINGS.DEFAULT_AUDIO_FORMAT || 'm4a'
-const MUSIC_FOLDER =
-	SETTINGS.MUSIC_FOLDER ||
-	'~/Music/Music/Media.localized/Automatically Add to Music.localized/'
+const MUSIC_FOLDER = SETTINGS.MUSIC_FOLDER || '~/Music/Music/Media.localized/Automatically Add to Music.localized/'
 const ARTWORK_FORMAT = SETTINGS.ARTWORK_FORMAT || 'jpg'
+const WINDOW_SCALING = SETTINGS.WINDOW_SCALING || 'auto'
+const DEFAULT_LIMIT = SETTINGS.DEFAULT_LIMIT || 100
 
 const properties = getProperties()
 
@@ -36,36 +29,23 @@ async function script() {
 
 	const youtubeName =
 		properties.url &&
-		(
-			await getCommands(
-				`yt-dlp -x -f ${DEFAULT_AUDIO_FORMAT} --audio-quality 0 --print "%(title)s" ${url}`
-			)
-		)[0]?.value
+		(await getCommands(`yt-dlp -x -f ${DEFAULT_AUDIO_FORMAT} --audio-quality 0 --print "%(title)s" ${url}`))[0]?.value
 			?.replace(/(\(|\[).*(\)|\])/gi, '')
 			.replace(/\(*(ft|feat).*/gi, '')
-	// console.log(youtubeName)
-	// await question('')
-	const term =
-		youtubeName ||
-		getFromClipboard ||
-		getFromSearch ||
-		(await question('What to search: '))
+
+	const term = youtubeName || getFromClipboard || getFromSearch || (await question('What to search: '))
 
 	const attributes = {
 		term,
 		entity: 'song',
-		limit: properties.limit?.replace(/\D/g) || 100,
-		sort: properties.sort || ''
+		limit: properties.limit?.replace(/\D/g) || DEFAULT_LIMIT
 	}
 
-	const formattedAttributes = Object.keys(attributes).reduce(
-		(str, attribute, i) => {
-			const encodedAtt = encodeURIComponent(attributes[attribute])
-			const att = `${i > 0 ? '&' : ''}${attribute}=${encodedAtt}`
-			return encodedAtt ? (str += att) : str
-		},
-		'?'
-	)
+	const formattedAttributes = Object.keys(attributes).reduce((str, attribute, i) => {
+		const encodedAtt = encodeURIComponent(attributes[attribute])
+		const att = `${i > 0 ? '&' : ''}${attribute}=${encodedAtt}`
+		return encodedAtt ? (str += att) : str
+	}, '?')
 
 	fetch(BASE_URL + formattedAttributes)
 		.then((response) => {
@@ -87,45 +67,57 @@ async function script() {
 
 			let songId = 0
 			if (results.length > 1) {
-				const offset = 5
-				function longest(type, array) {
-					return Math.max(...array.map((result) => result[type]?.length))
+				const offset = 7
+				let maxWidth_track = 50
+				let maxWidth_artist = 25
+				let maxWidth_collection = 30
+
+				if (WINDOW_SCALING === 'auto') {
+					const windowWidth = process.stdout.columns
+					const availableWidth = windowWidth - 30 - offset * 3
+
+					maxWidth_track = Math.round(availableWidth * 0.5)
+					maxWidth_artist = Math.round(availableWidth * 0.25)
+					maxWidth_collection = Math.round(availableWidth * 0.25)
 				}
 
-				const longestTrackName = longest('trackName', results)
-				const longestArtistName = longest('artistName', results)
-				const longestCollectionName = longest('collectionName', results)
-
-				const res = [...results]
+				const res = [...results].sort(sort)
+				// await question('')
+				// console.log(res)
+				// await question('')
 				res.unshift({})
 
-				const songs = res.reduce((prev, cur, id, arr) => {
+				const songs = res.reduce((prev, cur, id) => {
 					if (id === 0) {
 						return (prev +=
 							''.padEnd(5) +
-							'Name'.padEnd(longestTrackName + offset) +
+							limitLength('Name', maxWidth_track) +
 							'| ' +
-							'Artist'.padEnd(longestArtistName + offset) +
+							limitLength('Artist', maxWidth_artist) +
 							'| ' +
-							'Year'.padEnd(4 + offset) +
+							'Year'.padEnd(5) +
 							'| ' +
-							'Album'.padEnd(longestCollectionName + offset) +
+							limitLength('Album', maxWidth_collection) +
 							'\n|  ')
 					}
-					const trackName = cur.trackName?.padEnd(longestTrackName + offset)
-					const artistName = cur.artistName?.padEnd(longestArtistName + offset)
-					const collectionName = cur.collectionName?.padEnd(
-						longestCollectionName + offset
-					)
-					const year =
-						new Date(cur.releaseDate)
-							.getFullYear()
-							.toString()
-							.padEnd(4 + offset) || cur.releaseDate
 
-					const song =
-						trackName + '| ' + artistName + '| ' + year + '| ' + collectionName
-					return (prev += `${(id - 1).toString().padStart(3)}: ${song}\n|  `)
+					const trackName = limitLength(cur.trackName, maxWidth_track)
+					const artistName = limitLength(cur.artistName, maxWidth_artist)
+					const collectionName = limitLength(cur.collectionName, maxWidth_collection)
+					const year = (new Date(cur.releaseDate).getFullYear() || '').toString().padEnd(5)
+
+					const song = trackName + '| ' + artistName + '| ' + year + '| ' + collectionName
+					const songId = (id - 1).toString().padStart(3)
+					return (prev += `${songId}: ${song}\n|  `)
+
+					function limitLength(text, maxWidth) {
+						const isLongerThanMax = text.length > maxWidth
+						return text
+							.padEnd(maxWidth)
+							.substring(0, maxWidth)
+							.padEnd(maxWidth + (isLongerThanMax ? 3 : 0), '.')
+							.padEnd(maxWidth + offset)
+					}
 				}, '|\n|  ')
 
 				console.clear()
@@ -152,10 +144,8 @@ async function script() {
 			copyrights()
 			lineBreaker()
 
-			if (d.data.lyrics && (properties.open || properties.openLyrics))
-				exec(`open ${d.data.lyrics}`)
-			if (d.data.artwork && (properties.open || properties.openImage))
-				exec(`open ${d.data.artwork}`)
+			if (d.data.lyrics && (properties.open || properties.openLyrics)) exec(`open ${d.data.lyrics}`)
+			if (d.data.artwork && (properties.open || properties.openImage)) exec(`open ${d.data.artwork}`)
 
 			properties.download && url && downloadSong(url, d.data)
 			readline.close()
@@ -164,10 +154,7 @@ async function script() {
 	function getData(song) {
 		const LYRICS_BASE_URL = 'https://www.azlyrics.com/lyrics/'
 		const date = new Date(song.releaseDate)
-		const artwork = song.artworkUrl100?.replace(
-			'100x100bb.jpg',
-			`${ARTWORK_SIZE}x${ARTWORK_SIZE}bb.jpg`
-		)
+		const artwork = song.artworkUrl100?.replace('100x100bb.jpg', `${ARTWORK_SIZE}x${ARTWORK_SIZE}bb.jpg`)
 		const time = {
 			minutes: Math.floor(song.trackTimeMillis / 1000 / 60)
 				.toString()
@@ -210,11 +197,7 @@ async function script() {
 async function downloadSong(url, song) {
 	const format = properties.format || DEFAULT_AUDIO_FORMAT
 
-	const fileName = (
-		await getCommands(`yt-dlp -f ${format} --print "%(title)s.%(ext)s" ${url}`)
-	)[0].value
-	console.log(file)
-	// await question('')
+	const fileName = (await getCommands(`yt-dlp -f ${format} --print "%(title)s.%(ext)s" ${url}`))[0].value
 	await getCommands(
 		`yt-dlp -x -f ${format} --audio-quality 0 --add-metadata --parse-metadata "title:%(artist)s - %(title)s" --replace-in-metadata "title" "\((?=((?i)(official|music|video))).*\)" "" --parse-metadata "%(title)s:%(album)s" --parse-metadata "%(artist)s:%(album_artist)s" -o "%(artist)s - %(title)s.%(ext)s" ${url}`
 	)
@@ -289,14 +272,10 @@ function getProperties() {
 		})
 	allTags
 		// Filters to find tags only found in `keywordValues` array
-		.filter((tag) =>
-			keywordValues.find((keyword) => tag.includes('--' + keyword))
-		)
+		.filter((tag) => keywordValues.find((keyword) => tag.includes('--' + keyword)))
 		.forEach((tag) => {
 			// Gets tag if it was set in `keywordValues` array
-			const foundTag = keywordValues.find((keyword) =>
-				tag.includes('--' + keyword)
-			)
+			const foundTag = keywordValues.find((keyword) => tag.includes('--' + keyword))
 			// console.log(foundTag);
 			// String to remove
 			const toRemove = `--${foundTag} `
@@ -317,9 +296,6 @@ function getProperties() {
 		// Gets letter after '-'
 		const letterToUpperCase = keyword.match(/(?<=\-)./g)
 		// Replaces letter and minus with uppercase letter
-		return keyword.replace(
-			/-(?<=\-)./g,
-			letterToUpperCase.toString().toUpperCase()
-		)
+		return keyword.replace(/-(?<=\-)./g, letterToUpperCase.toString().toUpperCase())
 	}
 }
