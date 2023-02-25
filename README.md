@@ -107,7 +107,7 @@ node myousic.js --search "Linkin Park - Lost"
   <tr>
     <td><code>--[TYPE]</code></td>
     <td>string</td>
-    <td>Filters based on argument. <code>[TYPE]</code>: <i>artist</i>, <i>track</i>, <i>album</i>, <i>year</i>. Note you still need to use `--search`</td>
+    <td>Filters based on argument. <code>[TYPE]</code>: <i>artist</i>, <i>track</i>, <i>album</i>, <i>year</i>. Note you still need to use <code>--search</code></td>
   </tr>
   <tr>
     <td><code>--clipboard</code></td>
