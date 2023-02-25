@@ -34,19 +34,17 @@ I've also used `yt-dlp` for downloading from YouTube link and `exiftool` for cha
 
 ## Tools
 
-<hr>
-
 Tools to install:
 
 1. [NodeJS](https://nodejs.org/en/)
-2. [yt-dlp](https://github.com/yt-dlp/yt-dlp)
-3. [exiftool](https://exiftool.org/) ([GitHub](https://github.com/exiftool/exiftool))
+2. [yt-dlp](https://github.com/yt-dlp/yt-dlp) (for downloading)
+3. [exiftool](https://exiftool.org/) ([GitHub](https://github.com/exiftool/exiftool)) (for editting metadata)
 
 ## Download
 
 <hr>
 
-Download code from [GitHub](https://github.com/Radoslaw-Drab/myousic) or using [git](https://git-scm.com/):`
+Download code from [GitHub](https://github.com/Radoslaw-Drab/myousic) or using [git](https://git-scm.com/):
 
 1. Install git
 2. In console (CLI) move to directory you want script to be saved to using `cd`
