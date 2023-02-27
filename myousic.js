@@ -196,7 +196,7 @@ async function script() {
 			if (d.data.lyrics && (properties.open || properties.openLyrics)) exec(`open ${d.data.lyrics}`)
 			if (d.data.artwork && (properties.open || properties.openImage)) exec(`open ${d.data.artwork}`)
 
-			properties.download && url && downloadSong(url, d.data)
+			properties.download && url && (await downloadSong(url, d.data))
 			readline.close()
 			return
 		})
@@ -290,6 +290,7 @@ async function downloadSong(url, song) {
 	)
 	console.log('|  Download completed')
 	lineBreaker()
+	return new Promise((resolve) => resolve('ended'))
 }
 
 function getProperties() {
