@@ -39,14 +39,14 @@ async function script() {
 	const getFromUrl = properties.url === true
 	const url = getFromUrl ? clipboard : properties.url
 
-	const youtubeName =
+	const songName =
 		properties.url &&
 		(await getCommands(`yt-dlp --print "%(title)s" ${url}`))[0]?.value
 			?.replace(/(\(|\[).*(\)|\])/gi, '')
 			.replace(/\(*(ft|feat).*/gi, '')
 			.replace(/ x /gi, ', ')
 
-	const term = youtubeName || getFromClipboard || getFromSearch || (await question('What to search: '))
+	const term = songName || getFromClipboard || getFromSearch || (await question('What to search: '))
 
 	const attributes = {
 		term,
