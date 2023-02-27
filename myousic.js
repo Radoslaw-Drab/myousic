@@ -2,8 +2,8 @@ const { exec } = require('child_process')
 const { copyrights, lineBreaker, question, errorPrompt, getCommands, readline } = require('./utils')
 
 const BASE_URL = 'https://itunes.apple.com/search'
-// prettier-ignore
-const KEYWORDS = ["clipboard", "open", "open-lyrics", "open-image", "url", "download"];
+
+const KEYWORDS = ['clipboard', 'open', 'open-lyrics', 'open-image', 'url', 'download']
 const KEYWORD_VALUES = [
 	'search',
 	'url',
@@ -245,14 +245,12 @@ async function script() {
 async function downloadSong(url, song) {
 	const format = properties.format || DEFAULT_AUDIO_FORMAT
 
-	const fileName = (await getCommands(`yt-dlp -f ${format} --print "%(title)s.%(ext)s" ${url}`))[0].value
-	await getCommands(
-		`yt-dlp -x -f ${format} --audio-quality 0 --add-metadata --parse-metadata "title:%(artist)s - %(title)s" --replace-in-metadata "title" "\((?=((?i)(official|music|video))).*\)" "" --parse-metadata "%(title)s:%(album)s" --parse-metadata "%(artist)s:%(album_artist)s" -o "%(artist)s - %(title)s.%(ext)s" ${url}`
-	)
+	const fileName = `${song.artistName} - ${song.name}.${format}`
+	await getCommands(`yt-dlp -x -f ${format} --audio-quality 0 --add-metadata -o "${fileName}" ${url}`)
 
 	const coverArtName = 'artwork'
 	// Gets path to cover art
-	const coverArtPath = `${process.env.PWD}/${coverArtName}.${ARTWORK_FORMAT}`
+	const coverArtPath = `./${coverArtName}.${ARTWORK_FORMAT}`
 
 	await getCommands(`curl --output ${coverArtPath} ${song.artwork}`)
 
