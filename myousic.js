@@ -41,7 +41,7 @@ async function script() {
 
 	const youtubeName =
 		properties.url &&
-		(await getCommands(`yt-dlp -x -f ${DEFAULT_AUDIO_FORMAT} --audio-quality 0 --print "%(title)s" ${url}`))[0]?.value
+		(await getCommands(`yt-dlp --print "%(title)s" ${url}`))[0]?.value
 			?.replace(/(\(|\[).*(\)|\])/gi, '')
 			.replace(/\(*(ft|feat).*/gi, '')
 
