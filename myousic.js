@@ -44,6 +44,7 @@ async function script() {
 		(await getCommands(`yt-dlp --print "%(title)s" ${url}`))[0]?.value
 			?.replace(/(\(|\[).*(\)|\])/gi, '')
 			.replace(/\(*(ft|feat).*/gi, '')
+			.replace(/ x /gi, ', ')
 
 	const term = youtubeName || getFromClipboard || getFromSearch || (await question('What to search: '))
 
