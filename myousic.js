@@ -319,16 +319,16 @@ async function downloadSong(url, song) {
 	const format = properties.format || DEFAULT_AUDIO_FORMAT
 
 	// Gets whole file name
-	const fileName = `${song.artistName} - ${song.name}.${format}`
+	const musicFile = `${song.artistName} - ${song.name}.${format}`
 	// Downloads file in proper format and with proper file name
-	await getCommands(`yt-dlp -x -f ${format} --audio-quality 0 -o "${fileName}" ${url}`)
+	await getCommands(`yt-dlp -x -f ${format} --audio-quality 0 -o "${musicFile}" ${url}`)
 
 	const coverArtName = 'artwork'
 	// Gets path to cover art
-	const coverArtPath = `./${coverArtName}.${ARTWORK_FORMAT}`
+	const coverArtFile = `./${coverArtName}.${ARTWORK_FORMAT}`
 
 	// Saves artwork to new file
-	await getCommands(`curl --output ${coverArtPath} ${song.artwork}`)
+	await getCommands(`curl --output ${coverArtFile} ${song.artwork}`)
 
 	// Modifies metadata
 	// priettier-ignore-start
@@ -338,7 +338,7 @@ async function downloadSong(url, song) {
     -artist="${song.artistName}" 
     -album="${song.album}" 
     -albumArtist="${song.artistName}" 
-    "-coverArt<=${coverArtPath}" 
+    "-coverArt<=${coverArtFile}" 
     -trackNumber="${song.track}" 
     -discNumber="${song.disc}" 
     -trackExplicitness="${song.trackExplicitness}" 
@@ -346,7 +346,7 @@ async function downloadSong(url, song) {
     -year="${song.date}" 
     -description="${url}" 
 		-comment=""
-    "${fileName}"`
+    "${musicFile}"`
 			.replaceAll(' \n', ' ')
 			.replaceAll('\n', '')
 	)
@@ -354,9 +354,9 @@ async function downloadSong(url, song) {
 
 	// Removes cover art and moves music to Music folder
 	await getCommands(
-		`rm -rf ${coverArtPath}`,
+		`rm -rf ${coverArtFile}`,
 		`rm -rf *_original`,
-		`mv "./${fileName}" ${MUSIC_FOLDER.replace(
+		`mv "./${musicFile}" ${MUSIC_FOLDER.replace(
 			/\s/g,
 			// prettier-ignore
 			"\\ "
