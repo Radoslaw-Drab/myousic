@@ -252,7 +252,16 @@ async function script() {
 			if (d.data.lyrics && (properties.open || properties.openLyrics)) exec(`open ${d.data.lyrics}`)
 			if (d.data.artwork && (properties.open || properties.openImage)) exec(`open ${d.data.artwork}`)
 
-			properties.download && url && (await downloadSong(url, d.data))
+			let message = ''
+			// Downloads file if URL is provided and `download` property is set
+			if (properties.download && url) {
+				message = await downloadSong(url, d.data)
+			}
+			if (message) {
+				console.log('|	' + message)
+				lineBreaker()
+			}
+			// Closes readline
 			readline.close()
 			return
 		})
@@ -353,9 +362,7 @@ async function downloadSong(url, song) {
 			"\\ "
 		)}`
 	)
-	console.log('|  Download completed')
-	lineBreaker()
-	return new Promise((resolve) => resolve('ended'))
+	return new Promise((resolve) => resolve('Download completed'))
 }
 
 function getProperties() {
