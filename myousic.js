@@ -310,7 +310,8 @@ async function downloadSong(url, song) {
 
 	// Gets whole file name
 	const fileName = `${song.artistName} - ${song.name}.${format}`
-	await getCommands(`yt-dlp -x -f ${format} --audio-quality 0 --add-metadata -o "${fileName}" ${url}`)
+	// Downloads file in proper format and with proper file name
+	await getCommands(`yt-dlp -x -f ${format} --audio-quality 0 -o "${fileName}" ${url}`)
 
 	const coverArtName = 'artwork'
 	// Gets path to cover art
@@ -332,10 +333,9 @@ async function downloadSong(url, song) {
     -discNumber="${song.disc}" 
     -trackExplicitness="${song.trackExplicitness}" 
     -genre="${song.genre}" 
-    -releaseDate="${song.date}" 
-    -description="" 
-    -longDescription="" 
-    -lyrics=" " 
+    -year="${song.date}" 
+    -description="${url}" 
+		-comment=""
     "${fileName}"`
 			.replaceAll(' \n', ' ')
 			.replaceAll('\n', '')
