@@ -224,7 +224,8 @@ async function script() {
 				console.log(songs)
 				lineBreaker()
 
-				songId = +(await question('|  Which song to choose (ID): '))
+				// Gets song id based on user input
+				songId = +(await question('|  Which song to choose (ID): ')) || 0
 
 				lineBreaker()
 			}
