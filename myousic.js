@@ -35,6 +35,19 @@ const MUSIC_FOLDER = SETTINGS.MUSIC_FOLDER || '~/Music/Music/Media.localized/Aut
 const ARTWORK_FORMAT = SETTINGS.ARTWORK_FORMAT || 'jpg'
 const WINDOW_SCALING = SETTINGS.WINDOW_SCALING || 'auto'
 const DEFAULT_LIMIT = SETTINGS.DEFAULT_LIMIT || 100
+const EXAMPLE_DATA = {
+	artistName: 'notFound',
+	trackName: 'notFound',
+	collectionName: 'notFound',
+	trackTimeMillis: 100000,
+	trackNumber: 1,
+	trackCount: 1,
+	discNumber: 1,
+	discCount: 1,
+	releaseDate: new Date().toISOString(),
+	primaryGenreName: 'notFound',
+	trackExplicitness: 'notFound'
+}
 
 const properties = getProperties()
 
@@ -254,6 +267,13 @@ async function script() {
 				songNotFound = true
 				script()
 				return
+			}
+
+			// Sets default data if `downloadOnly` property is set
+			if (properties.downloadOnly) {
+				const EXAMPLE = { ...EXAMPLE_DATA }
+				EXAMPLE.trackName = songName
+				songData = EXAMPLE
 			}
 
 			// Returns object containing all data
