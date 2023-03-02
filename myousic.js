@@ -161,8 +161,12 @@ async function script() {
 			let songData = undefined
 
 			let songId = 0
+
+			// Gets sorted and filtered results
+			const res = [...results].sort(sort).filter(filter)
+
 			// If results contain array with more than one elements then formats proper display
-			if (results.length > 1) {
+			if (res.length > 1 && !properties.downloadOnly) {
 				// Offset between last element and new column
 				const offset = 7
 				// Max number of width for track
@@ -180,9 +184,6 @@ async function script() {
 					maxWidth_artist = Math.round(availableWidth * 0.25)
 					maxWidth_collection = Math.round(availableWidth * 0.25)
 				}
-
-				// Gets sorted and filtered results
-				const res = [...results].sort(sort).filter(filter)
 
 				// Adds new result for naming
 				res.unshift({})
@@ -236,6 +237,8 @@ async function script() {
 				console.log(songs)
 				lineBreaker()
 
+				res.shift()
+
 				// Gets song id based on user input
 				songId = +(await question('|  Which song to choose (ID): ')) || 0
 
@@ -244,7 +247,7 @@ async function script() {
 			console.clear()
 
 			// Gets song data
-			songData = results[songId]
+			songData = res[songId]
 
 			// Checks if song has been found. If not reruns script
 			if (songData === undefined) {
