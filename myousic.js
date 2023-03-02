@@ -49,8 +49,7 @@ async function script() {
 		properties.url &&
 		(await getCommands(`yt-dlp --print "%(title)s" ${url}`))[0]?.value
 			// Replaces anything that is contained inside of [] or ()
-			?.replace(/\(.*\)/gi, '')
-			.replace(/\[.*\]/gi, '')
+			?.replace(/\(.*\)|\[.*\]/gi, '')
 			// Replaces any ' x ' to ', '
 			.replace(/ x /gi, ', ')
 
@@ -74,6 +73,7 @@ async function script() {
 		return encodedAtt ? (str += att) : str
 	}, '?')
 
+	console.clear()
 	// Fetches properly formatted URL
 	fetch(BASE_URL + formattedAttributes)
 		.then((response) => {
@@ -81,9 +81,7 @@ async function script() {
 			if (!response.ok) {
 				console.clear()
 				const errorText = `ERROR\nCode: ${response.status}\nStatus: ${response.statusText}`
-				lineBreaker()
-				console.error(errorText)
-				lineBreaker()
+				errorPrompt(errorText)
 				return
 			}
 			return response.json()
@@ -229,6 +227,8 @@ async function script() {
 
 				lineBreaker()
 			}
+			console.clear()
+
 			// Gets song data
 			songData = results[songId]
 
@@ -281,17 +281,12 @@ async function script() {
 		}
 		// Replaces everything inside of () with 'feat' or 'ft' inside
 		const replaceRegex = new RegExp(/\(*(ft|feat).*/, 'gi')
+
+		const artistName = song.artistName.replace(replaceRegex, '').replace(/\W/g, '')
+		const trackName = song.trackName.replace(replaceRegex, '').replace(/\W/g, '')
+
 		// Properly formats lyrics URL
-		const lyrics =
-			LYRICS_BASE_URL +
-			(
-				song.artistName.replace(replaceRegex, '').replace(/\W/g, '') +
-				'/' +
-				song.trackName.replace(replaceRegex, '').replace(/\W/g, '') +
-				'.html'
-			)
-				.trim()
-				.toLowerCase()
+		const lyrics = `${LYRICS_BASE_URL}${artistName}/${trackName}.html`.trim().toLowerCase()
 
 		// Creates object with formatted data
 		const formattedData = {
@@ -300,7 +295,7 @@ async function script() {
 			album: song.collectionName,
 			artwork,
 			genre: song.primaryGenreName,
-			date: date.getFullYear(),
+			date: date?.getFullYear(),
 			time: `${time.minutes}:${time.seconds}`,
 			lyrics,
 			track: `${song.trackNumber}/${song.trackCount}`,
@@ -320,15 +315,24 @@ async function downloadSong(url, song) {
 
 	// Gets whole file name
 	const musicFile = `${song.artistName} - ${song.name}.${format}`
-	// Downloads file in proper format and with proper file name
-	await getCommands(`yt-dlp -x -f ${format} --audio-quality 0 -o "${musicFile}" ${url}`)
 
-	const coverArtName = 'artwork'
+	// Gets lyrics file
+	const lyricsFile = `lyrics-${song.id}.txt`
+
+	// Shows prompt and paste lyrics data into lyrics file
+	if (properties.addLyrics) {
+		await question('|  Copy lyrics and press Enter. ')
+		await getCommands(`pbpaste > ${lyricsFile}`)
+	}
+
 	// Gets path to cover art
-	const coverArtFile = `./${coverArtName}.${ARTWORK_FORMAT}`
-
+	const coverArtFile = `./artwork-${song.id}.${ARTWORK_FORMAT}`
 	// Saves artwork to new file
 	await getCommands(`curl --output ${coverArtFile} ${song.artwork}`)
+
+	console.log('|  Downloading...')
+	// Downloads file in proper format and with proper file name
+	await getCommands(`yt-dlp -x -f ${format} --audio-quality 0 --add-metadata -o "${musicFile}" ${url}`)
 
 	// Modifies metadata
 	// priettier-ignore-start
@@ -343,19 +347,22 @@ async function downloadSong(url, song) {
     -discNumber="${song.disc}" 
     -trackExplicitness="${song.trackExplicitness}" 
     -genre="${song.genre}" 
-    -year="${song.date}" 
-    -description="${url}" 
+    -releaseDate="${song.date}" 
+    -description="${url}"
+		-longDescription="" 
 		-comment=""
+		-"lyrics<=${lyricsFile}"
     "${musicFile}"`
 			.replaceAll(' \n', ' ')
 			.replaceAll('\n', '')
 	)
 	// prietter-ignore-end
 
-	// Removes cover art and moves music to Music folder
+	// Removes cover art, lyrics and moves music to Music folder
 	await getCommands(
 		`rm -rf ${coverArtFile}`,
 		`rm -rf *_original`,
+		`rm -rf ${lyricsFile}`,
 		`mv "./${musicFile}" ${MUSIC_FOLDER.replace(
 			/\s/g,
 			// prettier-ignore
