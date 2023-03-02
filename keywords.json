@@ -1,0 +1,4 @@
+{
+	"BOOLEAN": ["clipboard", "open", "open-lyrics", "open-image", "url", "download", "other-genres", "add-lyrics", "downloadOnly"],
+	"VALUES": ["search", "url", "limit", "sort-artist", "sort-track", "sort-album", "sort-year", "artist", "track", "album", "year"]
+}
