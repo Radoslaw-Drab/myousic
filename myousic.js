@@ -35,6 +35,8 @@ const MUSIC_FOLDER = SETTINGS.MUSIC_FOLDER || '~/Music/Music/Media.localized/Aut
 const ARTWORK_FORMAT = SETTINGS.ARTWORK_FORMAT || 'jpg'
 const WINDOW_SCALING = SETTINGS.WINDOW_SCALING || 'auto'
 const DEFAULT_LIMIT = SETTINGS.DEFAULT_LIMIT || 100
+const DEFAULT_OPTIONS = SETTINGS.DEFAULT_OPTIONS
+const SCHEMES = SETTINGS.SCHEMES
 const EXAMPLE_DATA = {
 	artistName: 'notFound',
 	trackName: 'notFound',
@@ -49,7 +51,7 @@ const EXAMPLE_DATA = {
 	trackExplicitness: 'notFound'
 }
 
-const properties = getProperties()
+const properties = getProperties(DEFAULT_OPTIONS, SCHEMES)
 
 let songNotFound = false
 script()
@@ -437,8 +439,7 @@ async function downloadSong(url, song) {
 	)
 	return new Promise((resolve) => resolve('Download completed'))
 }
-
-function getProperties() {
+function getProperties(defaultOptions = '', schemes = []) {
 	const keywords = [...KEYWORDS]
 	const keywordValues = [...KEYWORD_VALUES]
 
@@ -447,12 +448,21 @@ function getProperties() {
 	keywords.forEach((keyword) => (props[formatTag(keyword)] = false))
 
 	// Creates string out of arguments
-	const args = process.argv.reduce((acc, val) => acc + ' ' + val, '')
-	// Splits tags into array based on `--[tag]` and removes first one
-	const allTags = args
-		.trim()
-		.split(/.(?=--\w*)/g)
-		.slice(1)
+	let args = process.argv.reduce((acc, val) => acc + ' ' + val, '') + ' ' + defaultOptions
+
+	// Returns all arguments found in schemes and arguments
+	const argsFromSchemes = Object.keys(schemes).reduce((acc, key) => (args.includes(key) ? (acc += ' ' + schemes[key]) : acc), '')
+	if (argsFromSchemes) args += argsFromSchemes
+
+	// Splits tags into array based on `--[tag]` removes first one and returns only unique tags
+	const allTags = [
+		...new Set(
+			args
+				.trim()
+				.split(/.(?=--\w*)/g)
+				.slice(1)
+		)
+	]
 
 	allTags
 		// Filters to find tags only found in `keywords` array
