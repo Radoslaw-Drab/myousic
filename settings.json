@@ -3,5 +3,7 @@
 	"ARTWORK_FORMAT": "jpg",
 	"DEFAULT_AUDIO_FORMAT": "m4a",
 	"MUSIC_FOLDER": "~/Downloads/",
-	"DEFAULT_LIMIT": 100
+	"DEFAULT_LIMIT": 100,
+	"DEFAULT_OPTIONS": "--url",
+	"SCHEMES": { "Download": "--download --add-lyrics", "MySchemeExample": "--other-genres --open-lyrics" }
 }
