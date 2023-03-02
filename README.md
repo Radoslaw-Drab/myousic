@@ -11,6 +11,10 @@ JS script to recognise and download music you want!
 - [Examples](#examples)
 - [Configuration](#configuration)
   - [Options](#options)
+  - [Schemes](#schemes)
+    - [Introduction](#introduction-1)
+    - [Setting](#setting)
+    - [Examples](#examples-1)
 - [Used tools](#used-tools)
 - [Notes](#notes)
 
@@ -239,17 +243,103 @@ You can configure some options inside of `settings.json` file
 
 ## Options
 
-| Option               | Description                                                      |
-| -------------------- | ---------------------------------------------------------------- |
-| ARTWORK_SIZE         | Size of artwork you would want your music to have (default 1000) |
-| ARTWORK_FORMAT       | Format of artwork (default jpg)                                  |
-| DEFAULT_AUDIO_FORMAT | Format of artwork (default m4a)                                  |
-| MUSIC_FOLDER         | Folder where music will be saved (default ~/Downloads/)          |
-| DEFAULT_LIMIT        | Default limit which will be set if not `--limit` option is set   |
+| Option               | Description                                                                                            |
+| -------------------- | ------------------------------------------------------------------------------------------------------ |
+| ARTWORK_SIZE         | Size of artwork you would want your music to have (default 1000)                                       |
+| ARTWORK_FORMAT       | Format of artwork (default jpg)                                                                        |
+| DEFAULT_AUDIO_FORMAT | Format of artwork (default m4a)                                                                        |
+| MUSIC_FOLDER         | Folder where music will be saved (default ~/Downloads/)                                                |
+| DEFAULT_LIMIT        | Default limit which will be set if not `--limit` option is set                                         |
+| DEFAULT_OPTIONS      | String with options that will used by default. Example: `--url` will be used everytime you run command |
+| SCHEMES              | See [Schemes](#schemes) section                                                                        |
 
 <br>
 
 In order to add files automatically to Apple Music locate folder named _Automatically Add To Music.localized_ and change `MUSIC_FOLDER` to path of this folder.
+
+<hr>
+
+## Schemes
+
+<br>
+
+### Introduction
+
+<hr>
+
+Creating schemes can be useful to set options everytime you'd like to repeat script usage.
+
+<br>
+Example:
+
+You would like to download file, but everytime you need to add `--url`, `--download` or any other tag and you repeat the same command over and over again. That's where the schemes shine.
+
+<br>
+
+### Setting
+
+<hr>
+
+In `settings.json` file under _SCHEMES_ property you can define new schemes.
+
+New scheme can be added by creating new string key which is the name of your scheme followed by value which contains string with all tags you desire to use separated by space.
+
+<br>
+Important
+
+All scheme names have to start with capital letter
+
+<br>
+
+### Examples
+
+<hr>
+
+`settings.json`
+
+```json
+{
+	// ...other settings
+	"SCHEMES": {
+		"MyScheme": "--url --download"
+	}
+}
+```
+
+Then:
+
+```bash
+node myousic.js MyScheme
+```
+
+which is an equivalent of:
+
+```bash
+node myousic.js --url --download
+```
+
+<br>
+Other examples:
+
+<br>
+
+- Download with sorting by year descending
+
+```json
+"SCHEMES": {
+  "YearDownload": "--url --download --sort-year desc"
+}
+```
+
+- Download with lyrics
+
+```json
+"SCHEMES": {
+  "LyricsDownload": "--url --download --open-lyrics --add-lyrics"
+}
+```
+
+<br>
 
 # Used tools
 
