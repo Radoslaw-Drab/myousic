@@ -137,6 +137,26 @@ node myousic.js --search "Linkin Park - Lost"
     <td>-</td>
     <td>Downloads music, changes metadata and moves to set folder. Works only with YouTube links, which means you have to use <code>--url</code> with this option</td>
   </tr>
+  <tr>
+    <td><code>--format</code></td>
+    <td>string</td>
+    <td>Changes default format</td>
+  </tr>
+  <tr>
+    <td><code>--other-genres</code></td>
+    <td>-</td>
+    <td>Displays Genius website with other genres other than primary</td>
+  </tr>
+  <tr>
+    <td><code>--add-lyrics</code></td>
+    <td>-</td>
+    <td>Before download asks to copy lyrics to clipboard and then adds it to music file</td>
+  </tr>
+  <tr>
+    <td><code>--download-only</code></td>
+    <td>-</td>
+    <td>Downloads file only without any changes in metadata</td>
+  </tr>
 </table>
 
 # Examples
