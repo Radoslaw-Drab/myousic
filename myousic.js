@@ -304,6 +304,8 @@ async function script() {
 		})
 	function getData(song) {
 		const LYRICS_BASE_URL = 'https://www.azlyrics.com/lyrics/'
+		const GENRES_BASE_URL = 'https://genius.com/'
+
 		const date = new Date(song.releaseDate)
 		// Replaces 100x100 artwork format to desired resolution
 		const artwork = song.artworkUrl100?.replace('100x100bb.jpg', `${ARTWORK_SIZE}x${ARTWORK_SIZE}bb.jpg`)
@@ -316,6 +318,17 @@ async function script() {
 				.toString()
 				.padStart(2, '0')
 		}
+		const genresTrackName = song.trackName
+			.replace(/[^a-zA-Z0-9 ]+/gm, '')
+			.replace(/\s/gm, '-')
+			.toLowerCase()
+		const genresArtistName = song.artistName
+			.replace(/[^a-zA-Z0-9 ]+/gm, '')
+			.replace(/\s/gm, '-')
+			.toLowerCase()
+
+		const otherGenres = `${GENRES_BASE_URL}${genresArtistName}-${genresTrackName}-lyrics#song-info`
+
 		// Replaces everything inside of () with 'feat' or 'ft' inside
 		const replaceRegex = new RegExp(/\(*(ft|feat).*/, 'gi')
 
@@ -339,6 +352,8 @@ async function script() {
 			disc: `${song.discNumber}/${song.discCount}`,
 			trackExplicitness: song.trackExplicitness
 		}
+		if (properties.otherGenres) formattedData.otherGenres = otherGenres
+
 		// Creates properly formatted prompt
 		const formattedPrompt = Object.keys(formattedData).reduce((acc, type) => {
 			return (acc += `${type}: ${formattedData[type]}\n|  `)
