@@ -279,6 +279,14 @@ async function script() {
 			// Returns object containing all data
 			const d = getData(songData)
 
+			// Downloads file only
+			if (properties.downloadOnly) {
+				lineBreaker()
+				await download(d.data)
+				readline.close()
+				return
+			}
+
 			// Shows proper data prompt
 			lineBreaker()
 			console.log(d.prompt)
@@ -289,15 +297,7 @@ async function script() {
 			if (d.data.lyrics && (properties.open || properties.openLyrics)) exec(`open ${d.data.lyrics}`)
 			if (d.data.artwork && (properties.open || properties.openImage)) exec(`open ${d.data.artwork}`)
 
-			let message = ''
-			// Downloads file if URL is provided and `download` property is set
-			if (properties.download && url) {
-				message = await downloadSong(url, d.data)
-			}
-			if (message) {
-				console.log('|	' + message)
-				lineBreaker()
-			}
+			await download(d.data, songData.trackId)
 			// Closes readline
 			readline.close()
 			return
@@ -344,6 +344,20 @@ async function script() {
 			return (acc += `${type}: ${formattedData[type]}\n|  `)
 		}, '|\n|  ')
 		return { data: formattedData, prompt: formattedPrompt }
+	}
+	async function download(data, id = -1) {
+		let message = ''
+		// Downloads file if URL is provided and `download` property is set
+		if (properties.download && url) {
+			const song = { ...data }
+			song.id = id === -1 || Math.random().toString()
+
+			message = await downloadSong(url, song)
+		}
+		if (message) {
+			console.log('|  ' + message)
+			lineBreaker()
+		}
 	}
 }
 async function downloadSong(url, song) {
