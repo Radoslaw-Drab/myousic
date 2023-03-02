@@ -3,7 +3,17 @@ const { copyrights, lineBreaker, question, errorPrompt, getCommands, readline } 
 
 const BASE_URL = 'https://itunes.apple.com/search'
 
-const KEYWORDS = ['clipboard', 'open', 'open-lyrics', 'open-image', 'url', 'download']
+const KEYWORDS = [
+	'clipboard',
+	'open',
+	'open-lyrics',
+	'open-image',
+	'url',
+	'download',
+	'other-genres',
+	'add-lyrics',
+	'downloadOnly'
+]
 const KEYWORD_VALUES = [
 	'search',
 	'url',
@@ -28,6 +38,7 @@ const DEFAULT_LIMIT = SETTINGS.DEFAULT_LIMIT || 100
 
 const properties = getProperties()
 
+let songNotFound = false
 script()
 
 async function script() {
@@ -53,8 +64,11 @@ async function script() {
 			// Replaces any ' x ' to ', '
 			.replace(/ x /gi, ', ')
 
-	// Gets term to search based on hierarchy: url > clipboard > search > no properties
-	const term = songName || getFromClipboard || getFromSearch || (await question('What to search: '))
+	lineBreaker()
+	// Gets term to search based on hierarchy: question after rerunned script > url > clipboard > search > no properties
+	const term = songNotFound
+		? await question('|  Song not found by YouTube name. New search: ')
+		: '' || songName || getFromClipboard || getFromSearch || (await question('|  What to search: '))
 
 	const attributes = {
 		term,
@@ -232,10 +246,10 @@ async function script() {
 			// Gets song data
 			songData = results[songId]
 
-			// Prints error if song data has not been found
-			console.clear()
+			// Checks if song has been found. If not reruns script
 			if (songData === undefined) {
-				errorPrompt('Song not found')
+				songNotFound = true
+				script()
 				return
 			}
 
