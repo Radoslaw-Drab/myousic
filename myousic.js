@@ -1,5 +1,15 @@
 const { exec } = require('child_process')
-const { copyrights, lineBreaker, question, errorPrompt, getCommands, readline, getProperties, downloadSong } = require('./utils')
+const {
+	copyrights,
+	lineBreaker,
+	question,
+	errorPrompt,
+	getCommands,
+	readline,
+	getProperties,
+	downloadSong,
+	CMDS
+} = require('./utils')
 
 const BASE_URL = 'https://itunes.apple.com/search'
 
@@ -31,7 +41,7 @@ script()
 async function script() {
 	console.clear()
 	// Gets data from the clipboard
-	const clipboard = (await getCommands('pbpaste'))[0].value
+	const clipboard = (await getCommands(`${CMDS.clipboard}`))[0].value
 
 	// Gets data from the clipboard if `clipboard` property is set
 	const getFromClipboard = properties.clipboard && clipboard
@@ -268,8 +278,8 @@ async function script() {
 			lineBreaker()
 
 			// Opens lyrics and/or images if `open`, `openLyrics` or `openImage` property is set
-			if (d.data.lyrics && (properties.open || properties.openLyrics)) exec(`open ${d.data.lyrics}`)
-			if (d.data.artwork && (properties.open || properties.openImage)) exec(`open ${d.data.artwork}`)
+			if (d.data.lyrics && (properties.open || properties.openLyrics)) exec(`${CMDS.open} ${d.data.lyrics}`)
+			if (d.data.artwork && (properties.open || properties.openImage)) exec(`${CMDS.open} ${d.data.artwork}`)
 
 			await download(d.data, songData.trackId)
 			// Closes readline
@@ -341,7 +351,7 @@ async function script() {
 			const song = { ...data }
 			song.id = id === -1 || Math.random().toString()
 
-			message = await downloadSong(url, song)
+			message = await downloadSong(url, song, properties)
 		}
 		if (message) {
 			console.log('|  ' + message)
