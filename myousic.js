@@ -349,7 +349,7 @@ async function script() {
 		// Downloads file if URL is provided and `download` property is set
 		if (properties.download && url) {
 			const song = { ...data }
-			song.id = id === -1 || Math.random().toString()
+			song.id = id === -1 ? Math.round(Math.random() * 100000) : Math.round(id)
 
 			message = await downloadSong(url, song, properties)
 		}
