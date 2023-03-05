@@ -64,7 +64,7 @@ async function script() {
 	lineBreaker()
 	// Gets term to search based on hierarchy: question after rerunned script > url > clipboard > search > no properties
 	const term = songNotFound
-		? await question('|  Song not found by YouTube name. New search: ')
+		? await question('|  Song not found. New search: ')
 		: '' || songName || getFromClipboard || getFromSearch || (await question('|  What to search: '))
 
 	const attributes = {
