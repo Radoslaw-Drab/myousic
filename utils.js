@@ -126,7 +126,7 @@ async function downloadSong(url, song, properties) {
 	// Shows prompt and paste lyrics data into lyrics file
 	if (properties.addLyrics) {
 		await question('|  Copy lyrics and press Enter. ')
-		await getCommands(`${CMD.clipboard} > ${lyricsFile}`)
+		await getCommands(`${CMDS.clipboard} > ${lyricsFile}`)
 	}
 
 	// Gets path to cover art
