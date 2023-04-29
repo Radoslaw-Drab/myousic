@@ -298,7 +298,7 @@ async function script() {
 			.replace(/\s/gm, '-')
 			.toLowerCase()
 
-		const otherGenres = `${GENRES_BASE_URL}${genresArtistName}-${genresTrackName}-lyrics#song-info`
+		const otherGenres = `${GENRES_BASE_URL}${genresArtistName}-${genresTrackName}-lyrics#song-info`.replaceAll('--', '-')
 
 		// Replaces everything inside of () with 'feat' or 'ft' inside
 		const replaceRegex = new RegExp(/\(*(ft|feat).*/, 'gi')
