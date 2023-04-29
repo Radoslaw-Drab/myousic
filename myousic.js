@@ -336,7 +336,7 @@ async function script() {
 			disc: `${song.discNumber}/${song.discCount}`,
 			trackExplicitness: song.trackExplicitness
 		}
-		if (properties.otherGenres) formattedData.otherGenres = otherGenres
+		if (properties.otherGenres || properties.addGenres) formattedData.otherGenres = otherGenres
 
 		// Creates properly formatted prompt
 		const formattedPrompt = Object.keys(formattedData).reduce((acc, type) => {
