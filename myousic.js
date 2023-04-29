@@ -255,23 +255,8 @@ async function script() {
 				return
 			}
 
-			// Sets default data if `downloadOnly` property is set
-			if (properties.downloadOnly) {
-				const EXAMPLE = { ...EXAMPLE_DATA }
-				EXAMPLE.trackName = songName
-				songData = EXAMPLE
-			}
-
 			// Returns object containing all data
 			const d = getData(songData)
-
-			// Downloads file only
-			if (properties.downloadOnly) {
-				lineBreaker()
-				await download(d.data)
-				readline.close()
-				return
-			}
 
 			// Shows proper data prompt
 			lineBreaker()
