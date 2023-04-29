@@ -128,6 +128,15 @@ async function downloadSong(url, song, properties) {
 		await question('|  Copy lyrics and press Enter. ')
 		await getCommands(`${CMDS.clipboard} > ${lyricsFile}`)
 	}
+	let otherGenres = ''
+	if (properties.addGenres) {
+		// Opens url where you can find other genres
+		await getCommands(`${CMDS.open} ${song.otherGenres}`)
+		// Properly formates every genre adding `#` before
+		otherGenres = (await question('|  Insert other genres separated by space: '))
+			.split(' ')
+			.reduce((acc, genre, i) => (acc += `${i !== 0 ? ', ' : ''}#${genre}`), '')
+	}
 
 	// Gets path to cover art
 	const coverArtFile = `./artwork-${song.id}.${ARTWORK_FORMAT}`
@@ -154,7 +163,7 @@ async function downloadSong(url, song, properties) {
     -releaseDate="${song.date}" 
     -description="${url}"
 		-longDescription="" 
-		-comment=""
+		-comment="${otherGenres}"
 		-"lyrics<=${lyricsFile}"
     "${musicFile}"`
 			.replaceAll(' \n', ' ')
