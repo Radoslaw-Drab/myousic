@@ -237,6 +237,26 @@ Filters output which contains by _'Linkin Park'_ and was published in 2003.
 node myousic.js --search Linkin Park --year 2003
 ```
 
+Opens lyrics website and waits till user copies lyrics and presses enter. Then continuous download. (Data in clipboard: _https://youtu.be/7NK_JOkuSVY_)
+
+```bash
+node myousic.js --url --download --add-lyrics --open-lyrics
+```
+
+Then waits for the user action:
+
+<img alt="Waiting for user interaction image" src="./img/add-lyrics.png" style="max-width: 1100px">
+
+Opens genres website and waits till user adds genres and presses enter. Then continuous download. (Data in clipboard: _https://youtu.be/7NK_JOkuSVY_)
+
+```bash
+node myousic.js --url --download --add-genres
+```
+
+Then waits for the user action:
+
+<img alt="Waiting for user interaction image" src="./img/add-genres.png" style="max-width: 1100px">
+
 # Configuration
 
 You can configure some options inside of `settings.json` file
