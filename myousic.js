@@ -51,6 +51,8 @@ async function script() {
 	const getFromUrl = properties.url === true
 	// Gets URL based on `url` property. Gets value from clipboard if `url` does not contain any url afterwards
 	const url = getFromUrl ? clipboard : properties.url
+	// Gets type from `track`, `artist`, `album` or `year` attribute
+	const getFromTypes = properties.track || properties.artist || properties.album || properties.year
 
 	// Returns song name based on YouTube title
 	const songName =
@@ -62,10 +64,10 @@ async function script() {
 			.replace(/ x /gi, ', ')
 
 	lineBreaker()
-	// Gets term to search based on hierarchy: question after rerunned script > url > clipboard > search > no properties
+	// Gets term to search based on hierarchy: question after rerunned script > url > clipboard > search > types > no properties
 	const term = songNotFound
 		? await question('|  Song not found. New search: ')
-		: '' || songName || getFromClipboard || getFromSearch || (await question('|  What to search: '))
+		: '' || songName || getFromClipboard || getFromSearch || getFromTypes || (await question('|  What to search: '))
 
 	const attributes = {
 		term,
