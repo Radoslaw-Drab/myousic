@@ -247,7 +247,7 @@ You can configure some options inside of `settings.json` file
 | -------------------- | ------------------------------------------------------------------------------------------------------ |
 | ARTWORK_SIZE         | Size of artwork you would want your music to have (default 1000)                                       |
 | ARTWORK_FORMAT       | Format of artwork (default jpg)                                                                        |
-| DEFAULT_AUDIO_FORMAT | Format of artwork (default m4a)                                                                        |
+| DEFAULT_AUDIO_FORMAT | Format of audio (default m4a)                                                                          |
 | MUSIC_FOLDER         | Folder where music will be saved (default ~/Downloads/)                                                |
 | DEFAULT_LIMIT        | Default limit which will be set if not `--limit` option is set                                         |
 | DEFAULT_OPTIONS      | String with options that will used by default. Example: `--url` will be used everytime you run command |
