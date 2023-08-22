@@ -3,6 +3,7 @@ const readline = require('readline').createInterface({
 	input: process.stdin,
 	output: process.stdout
 })
+const COMMAND_DIRECTORY = '/yt-dlp-directory/'
 const SETTINGS = require('./settings.json')
 const COMMANDS = require('./commands.json')
 const KEYWORDS = require('./keywords.json')
@@ -144,8 +145,9 @@ async function downloadSong(url, song, properties) {
 	await getCommands(`curl --output ${coverArtFile} ${song.artwork}`)
 
 	console.log('|  Downloading...')
+
 	// Downloads file in proper format and with proper file name
-	await getCommands(`yt-dlp -x -f ${format} --audio-quality 0 --add-metadata -o "${musicFile}" ${url}`)
+	await getCommands(`${COMMAND_DIRECTORY}/yt-dlp -x -f ${format} --audio-quality 0 --add-metadata -o "${musicFile}" ${url}`)
 
 	// Modifies metadata
 	// priettier-ignore-start
@@ -209,5 +211,6 @@ module.exports = {
 	getProperties,
 	downloadSong,
 	CMDS,
-	readline
+	readline,
+	COMMAND_DIRECTORY
 }

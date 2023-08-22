@@ -8,7 +8,8 @@ const {
 	readline,
 	getProperties,
 	downloadSong,
-	CMDS
+	CMDS,
+	COMMAND_DIRECTORY
 } = require('./utils')
 
 const BASE_URL = 'https://itunes.apple.com/search'
@@ -57,7 +58,7 @@ async function script() {
 	// Returns song name based on YouTube title
 	const songName =
 		properties.url &&
-		(await getCommands(`yt-dlp --print "%(title)s" ${url}`))[0]?.value
+		(await getCommands(`${COMMAND_DIRECTORY}/yt-dlp --print "%(title)s" ${url}`))[0]?.value
 			// Replaces anything that is contained inside of [] or ()
 			?.replace(/\(.*\)|\[.*\]/gi, '')
 			// Replaces any ' x ' to ', '
@@ -81,7 +82,7 @@ async function script() {
 		// Gets encodedURI with current attribute
 		const encodedAtt = encodeURIComponent(attributes[attribute])
 		// Determines whether to add `&` and adds attribute to URI
-		const att = `${i > 0 ? '&' : ''}${attribute}=${encodedAtt}`
+		const att = `${i > 0 ? '&' : ''}${attribute}=${encodedAtt.toString().replaceAll('*', '')}`
 		// Adds `att` to string only if `encodedAtt` is set
 		return encodedAtt ? (str += att) : str
 	}, '?')
