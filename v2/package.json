@@ -1,0 +1,25 @@
+{
+	"name": "myousic",
+	"version": "1.0.0",
+	"description": "Search and download music",
+	"main": "index.js",
+	"repository": "https://github.com/RadoslawDrab/myousic",
+	"author": "Radoslaw Drab",
+	"license": "MIT",
+	"private": false,
+	"scripts": {
+		"dev": "nodemon build/index.js ",
+		"build": "babel src -w --out-dir build/ --extensions .ts --ignore \"src/**/*.test.ts\"",
+		"start": "node build/index.js"
+	},
+	"devDependencies": {
+		"@babel/preset-typescript": "^7.22.5",
+		"@types/node": "^20.5.0"
+	},
+	"dependencies": {
+		"@babel/cli": "^7.22.10",
+		"@babel/core": "^7.22.10",
+		"@babel/preset-env": "^7.22.10",
+		"babel-preset-minify": "^0.5.2"
+	}
+}
