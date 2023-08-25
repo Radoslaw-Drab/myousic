@@ -28,14 +28,15 @@ async function init() {
 	process.exit()
 }
 async function showMenu() {
-	const options = ['search', 'download', 'quit'] as const
-	type Options = (typeof options)[number]
-	const option = await terminal.menu<Options>(options)
+	const options = ['search', 'download', 'quit']
+	const optionId = await terminal.menu(options)
 
-	switch (option) {
-		case 'quit':
+	switch (optionId) {
+		case -1:
+			return null
+		case 2:
 			return null
 		default:
-			return option
+			return options[optionId]
 	}
 }

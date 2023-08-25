@@ -26,13 +26,13 @@ function line(): void {
 	const windowWidth = process.stdout.columns
 	console.log('-'.repeat(windowWidth || 50))
 }
-function list(array: readonly any[], numbered?: boolean): void {
+function list(array: string[], numbered?: boolean): void {
 	array.forEach((item, index) => {
 		const prefix: string = numbered ? `${index + 1}.` : '-'
 		console.log(`${prefix} ${item}`)
 	})
 }
-async function menu<Type extends string = string>(options: readonly Type[]): Promise<Type> {
+async function menu(options: string[]): Promise<number> {
 	let hasError = false
 	do {
 		hasError = false
@@ -45,12 +45,12 @@ async function menu<Type extends string = string>(options: readonly Type[]): Pro
 				`Option (1-${options.length}): `,
 				options.map((_, index) => (index + 1).toString())
 			))
-			return (options[optionId - 1] || '') as Type
+			return optionId - 1
 		} catch {
 			hasError = false
 		}
 	} while (hasError)
-	return '' as Type
+	return -1
 }
 export default {
 	line,
