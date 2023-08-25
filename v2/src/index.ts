@@ -1,5 +1,5 @@
 import { searchAction } from './search'
-import terminal, { question, readLine } from './utils'
+import terminal, { question, readline } from './utils'
 
 init()
 async function init() {
@@ -19,9 +19,12 @@ async function init() {
 				run = false
 			}
 		}
-		if (run) await question('Press Enter key to continue. ')
+		if (run) {
+			terminal.line()
+			await question('Press Enter key to continue. ')
+		}
 	} while (run)
-	readLine.close()
+	readline.close()
 	process.exit()
 }
 async function showMenu() {
