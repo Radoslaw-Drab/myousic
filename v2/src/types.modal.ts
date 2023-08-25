@@ -1,41 +1,37 @@
 export interface ReturnData {
-	results: number
-	data: ReturnData[]
+	resultsCount: number
+	results: ReturnedTrack[]
 }
-export interface ReturnedData {
+export interface ReturnedTrack {
 	wrapperType: WrapperType
 	explicitness: Explicitness
-	kind: Kind
+	kind: 'song'
 	trackName: string
+	trackCensoredName: string
+	trackViewUrl: string
 	artistName: string
+	artistViewUrl: string
 	collectionName: string
+	collectionCensoredName: string
+	collectionViewUrl: string
+	collectionArtistName?: string
+	collectionExplicitness: Explicitness
 	censoredName: string
 	artworkUrl60?: string
 	artworkUrl100?: string
-	viewURL: string
-	previewURL?: string
-	trackTimeMillis?: string
-}
-
-export interface ReturnTrack extends ReturnedData {
-	previewURL: string
+	previewUrl: string
 	trackTimeMillis: string
+	trackId: number
+	artistId: number
+	collectionId: number
+	releaseDate: string
+	primaryGenreName: string
+	country: string
+	discCount: number
+	discNumber: number
+	trackCount: number
+	trackNumber: number
 }
 
 type WrapperType = 'track' | 'collection' | 'artist'
 type Explicitness = 'explicit' | 'cleaned' | 'notExplicit'
-type Media = 'music' | 'movie' | 'podcast' | 'musicVideo' | 'audiobook' | 'shortFilm' | 'tvShow' | 'software' | 'ebook' | 'all'
-type Kind =
-	| 'book'
-	| 'album'
-	| 'coached-audio'
-	| 'feature-movie'
-	| 'interactive-booklet'
-	| 'music-video'
-	| 'pdf'
-	| 'podcast'
-	| 'podcast-episode'
-	| 'software-package'
-	| 'song'
-	| 'tv-episode'
-	| 'artist'
