@@ -6,14 +6,14 @@ export const readline: ReadLine = createInterface({
 	output: process.stdout
 })
 
-export async function question(question: string, expectedAnswers?: string[]): Promise<string> {
+export async function question(question: string, expectedAnswers?: string[], allowEmpty: boolean = false): Promise<string> {
 	return new Promise((resolve, reject) => {
 		readline.question(question, (answer: string) => {
 			if (expectedAnswers && expectedAnswers.length > 0) {
 				// Checks if answers is one of the expected ones
 				const isCorrect = expectedAnswers.find((ans) => ans === answer) !== undefined
 
-				if (isCorrect) resolve(answer)
+				if (isCorrect || allowEmpty) resolve(answer)
 				else reject()
 			} else {
 				resolve(answer)
