@@ -5,6 +5,7 @@ init()
 async function init() {
 	let run = true
 	do {
+		console.clear()
 		const option = await showMenu()
 
 		switch (option) {
@@ -16,7 +17,15 @@ async function init() {
 				break
 			}
 			case null: {
+				console.clear()
+				terminal.line()
+				console.log('Invalid input')
+
+				break
+			}
+			default: {
 				run = false
+				break
 			}
 		}
 		if (run) {
@@ -34,8 +43,8 @@ async function showMenu() {
 	switch (optionId) {
 		case -1:
 			return null
-		case 2:
-			return null
+		case options.findIndex((option) => option === 'quit'):
+			return
 		default:
 			return options[optionId]
 	}
