@@ -38,12 +38,15 @@ function list(array: string[], numbered?: boolean): void {
 		console.log(`${prefix} ${item}`)
 	})
 }
-async function menu(options: string[]): Promise<number> {
+async function menu(options: string[], title?: string): Promise<number> {
 	let hasError = false
 	do {
 		hasError = false
-		console.clear()
 		line()
+		if (title) {
+			console.log(title)
+			line()
+		}
 		list(options, true)
 		line()
 		try {
@@ -55,6 +58,7 @@ async function menu(options: string[]): Promise<number> {
 		} catch {
 			hasError = false
 		}
+		console.clear()
 	} while (hasError)
 	return -1
 }
