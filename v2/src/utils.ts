@@ -21,6 +21,10 @@ export async function question(question: string, expectedAnswers?: string[]): Pr
 		})
 	})
 }
+export function clipText(text: string, maxLength: number = 50) {
+	// Adds ... at the of the text if text has characters' length greather than `maxLength`
+	return `${text.substring(0, maxLength)}${'.'.repeat(Math.max(Math.min(text.length - maxLength, 3), 0))}`
+}
 
 function line(): void {
 	const windowWidth = process.stdout.columns
