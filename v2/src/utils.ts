@@ -1,14 +1,14 @@
 import { exec } from 'child_process'
 import { ReadLine, createInterface } from 'readline'
 
-export const readLine: ReadLine = createInterface({
+export const readline: ReadLine = createInterface({
 	input: process.stdin,
 	output: process.stdout
 })
 
 export async function question(question: string, expectedAnswers?: string[]): Promise<string> {
 	return new Promise((resolve, reject) => {
-		readLine.question(question, (answer: string) => {
+		readline.question(question, (answer: string) => {
 			if (expectedAnswers && expectedAnswers.length > 0) {
 				// Checks if answers is one of the expected ones
 				const isCorrect = expectedAnswers.find((ans) => ans === answer) !== undefined
