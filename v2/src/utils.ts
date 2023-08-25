@@ -27,8 +27,10 @@ function line(): void {
 	console.log('-'.repeat(windowWidth || 50))
 }
 function list(array: string[], numbered?: boolean): void {
+	const maxNumberCharacterLength = (array.length + 1).toString().length
+
 	array.forEach((item, index) => {
-		const prefix: string = numbered ? `${index + 1}.` : '-'
+		const prefix: string = numbered ? `${index + 1}.`.padStart(maxNumberCharacterLength + 1, ' ') : '-'
 		console.log(`${prefix} ${item}`)
 	})
 }
