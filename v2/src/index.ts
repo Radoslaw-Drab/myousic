@@ -1,11 +1,38 @@
-import { askQuestion } from './utils'
+import { searchAction } from './search'
+import terminal, { question, readLine } from './utils'
 
 init()
 async function init() {
-	const answer = await askQuestion('Test: ')
-	console.log(answer)
+	let run = true
+	do {
+		const option = await showMenu()
+
+		switch (option) {
+			case 'search': {
+				searchAction()
+				break
+			}
+			case 'download': {
+				break
+			}
+			case null: {
+				run = false
+			}
+		}
+		if (run) await question('Press Enter key to continue. ')
+	} while (run)
+	readLine.close()
+	process.exit()
 }
-function showMenu() {
-	console.clear()
-	console.log()
+async function showMenu() {
+	const options = ['search', 'download', 'quit'] as const
+	type Options = (typeof options)[number]
+	const option = await terminal.menu<Options>(options)
+
+	switch (option) {
+		case 'quit':
+			return null
+		default:
+			return option
+	}
 }
