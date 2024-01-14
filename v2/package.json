@@ -1,25 +1,14 @@
 {
-	"name": "myousic",
-	"version": "1.0.0",
-	"description": "Search and download music",
-	"main": "index.js",
-	"repository": "https://github.com/RadoslawDrab/myousic",
-	"author": "Radoslaw Drab",
-	"license": "MIT",
-	"private": false,
-	"scripts": {
-		"dev": "nodemon build/index.js",
-		"build": "webpack -w",
-		"start": "node build/index.js"
-	},
-	"devDependencies": {
-		"@types/node": "^20.5.6",
-		"@types/webpack": "^5.28.2",
-		"nodemon": "^3.0.1",
-		"ts-loader": "^9.4.4",
-		"ts-node": "^10.9.1",
-		"typescript": "^5.2.2",
-		"webpack": "^5.88.2",
-		"webpack-cli": "^5.1.4"
-	}
+  "name": "myousic",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "https://github.com/RadoslawDrab/myousic",
+  "author": "Radoslaw Drab",
+  "license": "MIT",
+  "private": false,
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "inquirer": "^9.2.12",
+    "typescript": "^5.3.3"
+  }
 }
