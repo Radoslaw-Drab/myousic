@@ -1,14 +1,25 @@
 {
-  "name": "myousic",
-  "version": "1.0.0",
-  "main": "index.js",
-  "repository": "https://github.com/RadoslawDrab/myousic",
-  "author": "Radoslaw Drab",
-  "license": "MIT",
-  "private": false,
-  "devDependencies": {
-    "@types/node": "^20.11.0",
-    "inquirer": "^9.2.12",
-    "typescript": "^5.3.3"
-  }
+	"name": "myousic",
+	"version": "2.0.0",
+	"description": "CLI command for downloading music from youtube",
+	"main": "src/index.ts",
+	"bin": "dist/index.js",
+	"author": "Radosław Drab",
+	"license": "MIT",
+	"private": false,
+	"type": "module",
+	"scripts": {
+		"start": "concurrently -c auto -n ESBUILD,NODE \"node esbuild.mjs\" \"node --watch dist/index.js\"",
+		"prebuild": "shx rm -rf ./dist",
+		"build": "node esbuild.build.mjs && pkg -t node16-macos,node16-linux,node16-win -o dist/myousic dist/index.js"
+	},
+	"devDependencies": {
+		"concurrently": "^8.2.2",
+		"esbuild": "^0.21.1",
+		"pkg": "^5.8.1",
+		"typescript": "^5.4.5"
+	},
+	"dependencies": {
+		"shx": "^0.3.4"
+	}
 }
