@@ -8,7 +8,7 @@ const config = {
 	platform: 'node',
 	logLevel: 'debug',
 	sourcemap: 'inline',
-	format: 'esm'
+	format: 'cjs'
 }
 
 const context = await esbuild.context(config)
