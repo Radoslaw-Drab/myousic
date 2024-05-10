@@ -8,6 +8,7 @@ const config = {
 	platform: 'node',
 	logLevel: 'error',
 	sourcemap: false,
-	minify: true
+	minify: true,
+	format: 'esm'
 }
 await esbuild.build(config)

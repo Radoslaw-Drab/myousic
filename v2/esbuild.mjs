@@ -7,7 +7,8 @@ const config = {
 	outfile: 'dist/index.js',
 	platform: 'node',
 	logLevel: 'debug',
-	sourcemap: 'inline'
+	sourcemap: 'inline',
+	format: 'esm'
 }
 
 const context = await esbuild.context(config)
