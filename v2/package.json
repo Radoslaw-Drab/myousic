@@ -15,6 +15,7 @@
 		"build": "node esbuild.build.mjs && pkg ."
 	},
 	"devDependencies": {
+		"@types/copy-paste": "^1.1.33",
 		"@types/inquirer": "^9.0.7",
 		"@types/inquirer-autocomplete-prompt": "^3.0.3",
 		"@types/node": "^20.12.11",
@@ -24,8 +25,11 @@
 		"typescript": "^5.4.5"
 	},
 	"dependencies": {
+		"colors": "^1.4.0",
+		"copy-paste": "^1.5.3",
 		"inquirer": "^9.2.20",
 		"inquirer-autocomplete-standalone": "^0.8.1",
+		"inquirer-press-to-continue": "^1.2.0",
 		"shx": "^0.3.4"
 	},
 	"pkg": {
