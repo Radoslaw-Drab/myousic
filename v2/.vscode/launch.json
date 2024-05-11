@@ -1,0 +1,40 @@
+{
+	// Use IntelliSense to learn about possible attributes.
+	// Hover to view descriptions of existing attributes.
+	// For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+	"version": "0.2.0",
+	"compounds": [
+		{
+			"name": "Start build and node independently",
+			"configurations": ["Start node", "Start build"]
+		}
+	],
+	"configurations": [
+		{
+			"type": "node-terminal",
+			"command": "npm start",
+			"name": "Start build and node",
+			"request": "launch",
+			"outFiles": ["${workspaceFolder}/dist/**/*.js"]
+		},
+		{
+			"type": "node-terminal",
+			"command": "npm run build-only",
+			"name": "Start build",
+			"request": "launch",
+			"outFiles": ["${workspaceFolder}/dist/**/*.js"]
+		},
+		{
+			"type": "node-terminal",
+			"command": "npm run node-only",
+			"name": "Start node",
+			"request": "launch"
+		},
+		{
+			"type": "node-terminal",
+			"command": "npm run build",
+			"name": "Build project",
+			"request": "launch"
+		}
+	]
+}
