@@ -2,5 +2,6 @@
 	"musicPath": "./Music/",
 	"artworkSize": "1000",
 	"artworkFormat": "jpg",
-	"audioFormats": ["m4a", "mp3"]
+	"audioFormats": ["alac", "aac", "m4a", "mp3"],
+	"ytDlpPath": "/opt/homebrew/opt/yt-dlp/libexec/bin"
 }
