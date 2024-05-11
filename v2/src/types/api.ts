@@ -33,9 +33,9 @@ export interface Data extends Explicitness, CensoredName, ArtworkUrl, ViewUrl, I
 		| 'song'
 		| 'tv-episode'
 		| 'artist'
-	trackName: string
-	artistName: string
-	collectionName: string
+	trackName?: string
+	artistName?: string
+	collectionName?: string
 	primaryGenreName: string
 	discCount: number
 	discNumber: number
