@@ -52,5 +52,5 @@ export interface Track extends Data {
 }
 export interface ApiResults {
 	resultsCount: number
-	results: (Track | Data)[]
+	results: Track[]
 }
