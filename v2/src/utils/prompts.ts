@@ -5,12 +5,16 @@ export function createViewName(name: string) {
 	console.log(`--- ${name} ---`)
 }
 /** @description Creates prompts which allows user to return to main menu or proceed with current view again  */
-export async function returnToMainMenuPrompt<T>(currentView: (...options: any) => Promise<T>, ...options: any) {
+export async function returnToMainMenuPrompt<T, Options>(
+	currentView: (...options: Options[]) => Promise<T>,
+	defaultValue: boolean = true,
+	...options: Options[]
+) {
 	const { returnToMainMenu } = await inquirer.prompt<{ returnToMainMenu: boolean }>({
 		name: 'returnToMainMenu',
 		message: 'Return to main menu',
 		type: 'confirm',
-		default: true
+		default: defaultValue
 	})
 	console.clear()
 	return returnToMainMenu ? null : await currentView(...options)
@@ -88,13 +92,13 @@ type DistributeItem = {
  */
 export function distributeContent(
 	content: DistributeItem[],
-	options: {
+	options: Partial<{
 		reservedWidth: number
 		clip: string
 		separator: string
 		endWithSeparator: boolean
 		maxSize: number
-	}
+	}>
 ) {
 	// Options
 	const opt = { reservedWidth: 0, clip: '...', separator: ' | ', endWithSeparator: true, maxSize: 200, ...options }
