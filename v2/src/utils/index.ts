@@ -16,6 +16,7 @@ export function loopThroughKeys<Value, newValue extends Value = Value, T extends
 /**
  *
  * @param {string} text text to be trimmed
+ * @param {number} currentMaxLength current max text length. E.g. With ['test', 'world'] value should be 5
  * @param {number} maxLength max text length
  * @param {number} minLength min text length
  * @returns {string} trimmed text
@@ -27,9 +28,13 @@ export function loopThroughKeys<Value, newValue extends Value = Value, T extends
  *
  *
  */
-export function trimText(text: string, maxLength: number, minLength: number = 15): string {
-	const maxGreatherThanMin = maxLength > minLength
-	return `${text.substring(0, maxGreatherThanMin ? maxLength - 3 : minLength)}${
-		text.length >= maxLength && text.length >= minLength ? '...' : ''
-	}`.padEnd(maxGreatherThanMin ? maxLength : minLength, ' ')
+export function trimText(text: string, currentMaxLength: number, maxLength: number, minLength: number = 15): string {
+	return `${text.substring(0, currentMaxLength > maxLength ? maxLength : currentMaxLength)}`.padEnd(
+		currentMaxLength ? maxLength : minLength,
+		' '
+	)
+}
+export function trim(text: string, maxLength: number): string {
+	const substring = text.substring(0, maxLength)
+	return `${substring.padEnd(maxLength, ' ')}`
 }
