@@ -71,3 +71,22 @@ export function filterObjectValues<Value, T extends Record<string, Value> = {}>(
 			}, {}) as Partial<T>
 	)
 }
+
+export function loading(time: number = 250) {
+	let i = 1
+	const interval = setInterval(() => {
+		console.clear()
+		console.log('Loading' + '.'.repeat(i % 4))
+		i++
+	}, time)
+	return () => clearInterval(interval)
+}
+export async function wait(time: number, callback?: () => void) {
+	return new Promise<void>((resolve) => {
+		const timeout = setTimeout(() => {
+			callback && callback()
+			resolve()
+			clearTimeout(timeout)
+		}, Math.max(time, 10))
+	})
+}
