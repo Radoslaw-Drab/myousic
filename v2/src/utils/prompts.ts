@@ -29,6 +29,13 @@ type DistributeItem = {
 	size?: number
 	fill?: boolean
 }
+/**
+ * @param reservedWidth Number to reduce distribution
+ * @param clip String which will be show when text is too long
+ * @param separator String which will separate items
+ * @param endWithSeparator Boolean which determines whether to show separator at the end of the line
+ * @param maxSize Max content size
+ */
 type DistributeContentOptions = {
 	reservedWidth: number
 	clip: string
@@ -37,16 +44,12 @@ type DistributeContentOptions = {
 	endWithSeparator: boolean
 	maxSize: number
 	wrap: boolean
+	clipLinks: boolean
 }
 /**
  * @param content Array of items to distribute. For more information see examples
  * @options
- * @param reservedWidth Number to reduce distribution
- * @param clip String which will be show when text is too long
- * @param separator String which will separate items
- * @param endWithSeparator Boolean which determines whether to show separator at the end of the line
- * @param maxSize Max content size
- *
+ * 
  * @example
  *
  * ```
@@ -113,9 +116,10 @@ export function distributeContent(content: DistributeItem[], options?: Partial<D
 		endWithSeparator: true,
 		maxSize: 200,
 		wrap: false,
+		clipLinks: false,
 		...options
 	}
-	// Content which will stay the same no matter the sizez
+	// Content which will stay the same no matter the size
 	const staticContent = content.filter((item) => (item.size === 0 || item.percent === 0) && !item.fill)
 	// Static content characters length
 	const staticContentLength = staticContent.reduce((len, item) => (len += item.value.length), 0)
@@ -182,8 +186,13 @@ export function distributeContent(content: DistributeItem[], options?: Partial<D
 			// Returns fixed value
 			if (value.length === size && isFixed) return value
 			// Appends `clip` value at the end of the string if it's larger than size
-			else return value.replace(new RegExp(`\\S{${opt.clip.length}}$`), opt.clip)
-			// } else item.value
+			if (opt.wrap && item.value.length >= size) {
+				if (!opt.clipLinks && item.value.match(/https?:\/\/.*/)) return item.value
+
+				return value + '\n' + item.value.substring(size)
+			}
+			return value.replace(new RegExp(`\\S{${opt.clip.length}}$`), opt.clip)
+			// } else return item.value
 		}
 	}, '')
 	// Returns item type
@@ -194,6 +203,10 @@ export function distributeContent(content: DistributeItem[], options?: Partial<D
 		else return 'fill'
 	}
 }
+
+/**
+ * @param contrastedRows Whether to show every second row with different color
+ */
 interface TableOptions extends DistributeContentOptions {
 	contrastedRows: boolean
 	headerColor?: color.Color
@@ -203,10 +216,11 @@ export function createTable(columns: DistributeItem[], values: (string[] | null)
 		clip: '...',
 		startWithSeparator: true,
 		endWithSeparator: true,
-		maxSize: 100,
+		maxSize: 200,
 		reservedWidth: 0,
 		separator: ' | ',
 		wrap: false,
+		clipLinks: false,
 		contrastedRows: true,
 		...options
 	}
@@ -227,15 +241,16 @@ export function createTable(columns: DistributeItem[], values: (string[] | null)
 	const str =
 		fullHeading +
 		values.reduce((str, row, index) => {
-			const clr = opt.contrastedRows ? ((index + horizontalLinesOffset) % 2 === 0 ? color.green : color.white) : null
-			if (row === null) horizontalLinesOffset++
-			const content = row
+			const isHorizontalLine = row === null
+			const clr = opt.contrastedRows ? ((index + horizontalLinesOffset) % 2 === 0 ? color.gray : color.white) : null
+			// if (row === null) horizontalLinesOffset++
+			const content = !isHorizontalLine
 				? distributeContent(
 						row.map((col, index) => ({ ...columns[index], value: col })),
 						opt
 				  )
 				: horizontalLine
-			return (str += (clr ? clr(content) : content) + '\n')
+			return (str += (clr && !isHorizontalLine ? clr(content) : content) + '\n')
 		}, '') +
 		horizontalLine
 	return str
@@ -264,9 +279,12 @@ export function createTrackDataTable(track: Track) {
 			['Track number', track.trackNumber?.toString() ?? '1'],
 			['Track count', track.trackCount?.toString() ?? '1'],
 			null,
-			['Artwork URL', track.artworkUrl100.replace('100', '1000')]
+			['Artwork URL', track.artworkUrl100.replace(/100x100/g, '1000x1000')]
 		],
-		{ wrap: true }
+		{
+			wrap: true
+			// maxSize: 130
+		}
 	)
 	console.log(table)
 }
