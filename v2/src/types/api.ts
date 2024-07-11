@@ -37,10 +37,10 @@ export interface Data extends Explicitness, CensoredName, ArtworkUrl, ViewUrl, I
 	artistName?: string
 	collectionName?: string
 	primaryGenreName: string
-	discCount: number
-	discNumber: number
-	trackCount: number
-	trackNumber: number
+	discCount?: number
+	discNumber?: number
+	trackCount?: number
+	trackNumber?: number
 	releaseDate: string
 	shortDescription?: string
 	longDescription?: string
