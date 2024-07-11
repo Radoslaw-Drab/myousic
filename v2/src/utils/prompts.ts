@@ -1,4 +1,8 @@
 import inquirer from 'inquirer'
+import color from 'colors'
+
+import { Track } from 'types/api'
+import { loopThroughKeys } from 'utils'
 
 /** @description Shows custom name to the console */
 export function createViewName(name: string) {
@@ -24,6 +28,15 @@ type DistributeItem = {
 	percent?: number
 	size?: number
 	fill?: boolean
+}
+type DistributeContentOptions = {
+	reservedWidth: number
+	clip: string
+	separator: string
+	startWithSeparator: boolean
+	endWithSeparator: boolean
+	maxSize: number
+	wrap: boolean
 }
 /**
  * @param content Array of items to distribute. For more information see examples
@@ -90,18 +103,18 @@ type DistributeItem = {
  * ]
  * ```
  */
-export function distributeContent(
-	content: DistributeItem[],
-	options: Partial<{
-		reservedWidth: number
-		clip: string
-		separator: string
-		endWithSeparator: boolean
-		maxSize: number
-	}>
-) {
+export function distributeContent(content: DistributeItem[], options?: Partial<DistributeContentOptions>) {
 	// Options
-	const opt = { reservedWidth: 0, clip: '...', separator: ' | ', endWithSeparator: true, maxSize: 200, ...options }
+	const opt: DistributeContentOptions = {
+		reservedWidth: 0,
+		clip: '...',
+		separator: ' | ',
+		startWithSeparator: true,
+		endWithSeparator: true,
+		maxSize: 200,
+		wrap: false,
+		...options
+	}
 	// Content which will stay the same no matter the sizez
 	const staticContent = content.filter((item) => (item.size === 0 || item.percent === 0) && !item.fill)
 	// Static content characters length
@@ -115,6 +128,7 @@ export function distributeContent(
 				(content.length - 1) * opt.separator.length +
 				// Width if end separator is specified
 				(opt.endWithSeparator ? opt.separator.trimEnd().length : 0) +
+				(opt.startWithSeparator ? opt.separator.trimStart().length : 0) +
 				staticContentLength),
 		opt.maxSize
 	)
@@ -141,16 +155,20 @@ export function distributeContent(
 	return content.reduce((str, item, index, array) => {
 		switch (checkItemType(item)) {
 			case 'static':
-				return (str += item.value) + addSeparator()
+				return (str += addStartSeparator() + item.value + addSeparator())
 			case 'fill':
-				return (str += substring(fillContentSize) + addSeparator())
+				return (str += addStartSeparator() + substring(fillContentSize) + addSeparator())
 			case 'percent': {
 				const size = Math.round(availableWidth * item.percent)
-				return (str += substring(size) + addSeparator())
+				return (str += addStartSeparator() + substring(size) + addSeparator())
 			}
 			case 'size': {
-				return (str += substring(item.size, true) + addSeparator())
+				return (str += addStartSeparator() + substring(item.size, true) + addSeparator())
 			}
+		}
+		function addStartSeparator() {
+			if (index === 0 && opt.startWithSeparator) return opt.separator.trimStart()
+			else return ''
 		}
 		// Adds separator and determines whether to add separator at the end
 		function addSeparator() {
@@ -159,11 +177,13 @@ export function distributeContent(
 		}
 		// Creates substring of the value
 		function substring(size: number, isFixed: boolean = false) {
+			// if (!opt.wrap) {
 			const value = item.value.substring(0, size).padEnd(size, ' ')
 			// Returns fixed value
 			if (value.length === size && isFixed) return value
 			// Appends `clip` value at the end of the string if it's larger than size
 			else return value.replace(new RegExp(`\\S{${opt.clip.length}}$`), opt.clip)
+			// } else item.value
 		}
 	}, '')
 	// Returns item type
@@ -174,4 +194,79 @@ export function distributeContent(
 		else return 'fill'
 	}
 }
+interface TableOptions extends DistributeContentOptions {
+	contrastedRows: boolean
+	headerColor?: color.Color
+}
+export function createTable(columns: DistributeItem[], values: (string[] | null)[], options?: Partial<TableOptions>) {
+	const opt: TableOptions = {
+		clip: '...',
+		startWithSeparator: true,
+		endWithSeparator: true,
+		maxSize: 100,
+		reservedWidth: 0,
+		separator: ' | ',
+		wrap: false,
+		contrastedRows: true,
+		...options
+	}
+	const consoleWidth = process.stdout.columns
+	const tableWidth =
+		Math.max(Math.min(consoleWidth, opt.maxSize), 10) +
+		(opt.startWithSeparator ? opt.separator.trimStart().length : 0) +
+		(opt.endWithSeparator ? opt.separator.trimEnd().length : 0) +
+		(columns.length - 1) * opt.separator.length
 
+	const horizontalLine = '-'.repeat(tableWidth)
+
+	const headerContent = distributeContent(columns, opt)
+	const heading = opt.headerColor ? opt.headerColor(headerContent) : headerContent
+
+	const fullHeading = `${horizontalLine}\n${heading}\n${horizontalLine}\n`
+	let horizontalLinesOffset = 0
+	const str =
+		fullHeading +
+		values.reduce((str, row, index) => {
+			const clr = opt.contrastedRows ? ((index + horizontalLinesOffset) % 2 === 0 ? color.green : color.white) : null
+			if (row === null) horizontalLinesOffset++
+			const content = row
+				? distributeContent(
+						row.map((col, index) => ({ ...columns[index], value: col })),
+						opt
+				  )
+				: horizontalLine
+			return (str += (clr ? clr(content) : content) + '\n')
+		}, '') +
+		horizontalLine
+	return str
+}
+export function createTrackDataTable(track: Track) {
+	const timeSeconds = Math.floor(track.trackTimeMillis / 1000)
+	const time: string =
+		Math.floor(timeSeconds / 60)
+			.toString()
+			.padStart(2, '0') +
+		':' +
+		(timeSeconds - Math.floor(timeSeconds / 60) * 60).toString().padStart(2, '0')
+	const table = createTable(
+		[{ value: 'Names' }, { value: 'Values', percent: 0.8 }],
+		[
+			['Artist', track.artistName],
+			['Track', track.trackName],
+			['Album', track.collectionName],
+			null,
+			['Year', new Date(track.releaseDate).getFullYear().toString()],
+			['Time', time],
+			['Explicitness', track.trackExplicitness],
+			null,
+			['Disc number', track.discNumber?.toString() ?? '1'],
+			['Disc count', track.discCount?.toString() ?? '1'],
+			['Track number', track.trackNumber?.toString() ?? '1'],
+			['Track count', track.trackCount?.toString() ?? '1'],
+			null,
+			['Artwork URL', track.artworkUrl100.replace('100', '1000')]
+		],
+		{ wrap: true }
+	)
+	console.log(table)
+}
