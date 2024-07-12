@@ -2,7 +2,7 @@ import inquirer from 'inquirer'
 import color from 'colors'
 
 import { Track } from 'types/api'
-import { loopThroughKeys } from 'utils'
+import { getLyrics } from './app'
 
 /** @description Shows custom name to the console */
 export function createViewName(name: string) {
@@ -49,7 +49,7 @@ type DistributeContentOptions = {
 /**
  * @param content Array of items to distribute. For more information see examples
  * @options
- * 
+ *
  * @example
  *
  * ```
@@ -237,13 +237,11 @@ export function createTable(columns: DistributeItem[], values: (string[] | null)
 	const heading = opt.headerColor ? opt.headerColor(headerContent) : headerContent
 
 	const fullHeading = `${horizontalLine}\n${heading}\n${horizontalLine}\n`
-	let horizontalLinesOffset = 0
 	const str =
 		fullHeading +
 		values.reduce((str, row, index) => {
 			const isHorizontalLine = row === null
-			const clr = opt.contrastedRows ? ((index + horizontalLinesOffset) % 2 === 0 ? color.gray : color.white) : null
-			// if (row === null) horizontalLinesOffset++
+			const clr = opt.contrastedRows ? (index % 2 === 0 ? color.gray : color.white) : null
 			const content = !isHorizontalLine
 				? distributeContent(
 						row.map((col, index) => ({ ...columns[index], value: col })),
@@ -279,7 +277,8 @@ export function createTrackDataTable(track: Track) {
 			['Track number', track.trackNumber?.toString() ?? '1'],
 			['Track count', track.trackCount?.toString() ?? '1'],
 			null,
-			['Artwork URL', track.artworkUrl100.replace(/100x100/g, '1000x1000')]
+			['Artwork URL', track.artworkUrl100.replace(/100x100/g, '1000x1000')],
+			['Lyrics URL', getLyrics(track)]
 		],
 		{
 			wrap: true
