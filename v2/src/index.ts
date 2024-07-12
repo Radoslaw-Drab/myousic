@@ -5,9 +5,22 @@ import search from 'views/search'
 import settings from 'views/settings'
 import download from 'views/download'
 
+import { Config } from 'utils/class'
+
+import { Settings } from 'types/app'
+
 inquirer.registerPrompt('press-to-continue', pressToContinue)
 
 async function init() {
+	const config = new Config<Settings>('settings', {
+		appName: 'myousic',
+		ytDlpPath: '/opt/homebrew/opt/yt-dlp/libexec/bin',
+		artworkFormat: 'jpg',
+		audioFormats: ['alac', 'aac', 'm4a', 'mp3'],
+		artworkSize: 1000,
+		saveFolder: './Music'
+	})
+
 	console.clear()
 	const { menu } = await inquirer.prompt<{ menu: 'search' | 'download' | 'settings' | 'exit' }>({
 		name: 'menu',
