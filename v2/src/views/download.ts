@@ -7,8 +7,9 @@ import { createObjectFromArray, mapObjectsArrayToObject, loopThroughKeys, filter
 
 import searchView from './search'
 
-const downloadView = (withTerm?: boolean) =>
+const downloadView = (options?: { withTerm?: boolean }) =>
 	new Promise<void>(async (resolve, reject) => {
+		const { withTerm } = options
 		createViewName('Download')
 
 		const answer = await inquirer.prompt<{ url: string | 'clipboard' }>({
@@ -66,7 +67,7 @@ const downloadView = (withTerm?: boolean) =>
 		}
 		// Gets track
 		try {
-			const track = await searchView(withTerm ? `${termAnswer.artist} - ${termAnswer.song}` : term, downloadView)
+			const track = await searchView({ searchTerm: withTerm ? `${termAnswer.artist} - ${termAnswer.song}` : term }, downloadView)
 			if (track) {
 				// console.log(track)
 				createTrackDataTable(track)

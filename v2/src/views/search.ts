@@ -9,8 +9,9 @@ import constants from 'const'
 import { ApiResults, Data, Track } from 'types/api'
 import { Modifier } from 'types/app'
 
-const searchView = (searchTerm?: string, originalView?: () => Promise<void>) =>
+const searchView = (options?: { searchTerm?: string }, originalView?: () => Promise<void>) =>
 	new Promise<Track | void>(async (resolve, reject: ({ error: string, customError: boolean }) => void) => {
+		const { searchTerm } = options
 		createViewName('Search')
 
 		let search = searchTerm,

@@ -45,7 +45,7 @@ async function init() {
 				await download()
 				break
 			case 'settings':
-				await settings()
+				await settings({ config })
 				break
 			default:
 				return
