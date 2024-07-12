@@ -4,7 +4,7 @@ import color from 'colors'
 
 import { loopThroughKeys, loading } from 'utils'
 import { createViewName, distributeContent, returnToMainMenuPrompt } from 'utils/prompts'
-import config from 'config'
+import constants from 'const'
 
 import { ApiResults, Data, Track } from 'types/api'
 import { Modifier } from 'types/app'
@@ -78,7 +78,7 @@ const searchView = (searchTerm?: string, originalView?: () => Promise<void>) =>
 
 		try {
 			const response = await fetch(
-				`${config.baseDataUrl}?term=${term}&media=music&explicit=${explicitness ? 'yes' : 'no'}&limit=200`
+				`${constants.baseDataUrl}?term=${term}&media=music&explicit=${explicitness ? 'yes' : 'no'}&limit=200`
 			)
 			const data: ApiResults = await response.json()
 
@@ -89,7 +89,7 @@ const searchView = (searchTerm?: string, originalView?: () => Promise<void>) =>
 					error:
 						`No search result for: ${color.green(search)}!` +
 						` ${searchType} ` +
-						` ${config.baseDataUrl}?term=${term}&media=music&explicit=${explicitness ? 'yes' : 'no'}&limit=200`,
+						` ${constants.baseDataUrl}?term=${term}&media=music&explicit=${explicitness ? 'yes' : 'no'}&limit=200`,
 					customError: true
 				})
 				return
@@ -107,7 +107,7 @@ const searchView = (searchTerm?: string, originalView?: () => Promise<void>) =>
 							return input.split(';').reduce((output, inp) => output && getFilterValue(inp), true)
 						} else return true
 						function getFilterValue(input: string) {
-							const modifiers = loopThroughKeys<keyof Data>(config.searchModifiers)
+							const modifiers = loopThroughKeys<keyof Data>(constants.searchModifiers)
 
 							for (let modifier of modifiers) {
 								const key = modifier.key as Modifier

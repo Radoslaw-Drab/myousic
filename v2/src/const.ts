@@ -1,11 +1,11 @@
 import { ModifiersObject } from 'types/app'
 
-export interface Config {
+export interface Constants {
 	baseDataUrl: string
 	baseLyricsUrl: string
 	searchModifiers: ModifiersObject
 }
-const config: Config = {
+const constants: Constants = {
 	baseDataUrl: 'https://itunes.apple.com/search',
 	baseLyricsUrl: 'https://www.azlyrics.com/lyrics/',
 	searchModifiers: {
@@ -19,4 +19,4 @@ const config: Config = {
 		year: 'releaseDate'
 	}
 }
-export default config
+export default constants
