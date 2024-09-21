@@ -13,7 +13,8 @@ export const settings: (keyof Settings)[] = [
 	'artworkSize',
 	'artworkFormat',
 	'audioFormats',
-	'ytDlpPath'
+	'ytDlpPath',
+	'includeExplicitContentByDefault'
 ] as const
 export type SettingsKey = (typeof settings)[number]
 
@@ -24,6 +25,7 @@ export type Settings = {
 	artworkFormat?: 'jpg' | 'png'
 	ytDlpPath: string
 	audioFormats?: ('alac' | 'mp3' | 'm4a' | 'aac' | 'flac')[]
+	includeExplicitContentByDefault?: boolean
 }
 
 export type AppConfig = Config<Settings>
