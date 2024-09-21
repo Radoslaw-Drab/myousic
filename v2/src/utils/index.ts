@@ -1,3 +1,5 @@
+import * as path from 'path'
+
 /**
  * @description Loops throughout object keys
  * @param {T} obj Custom object with string keys and custom values
@@ -61,15 +63,13 @@ export function filterObjectValues<Value, T extends Record<string, Value> = {}>(
 		afterFilter?: (key: keyof T, value: Value, index: number) => boolean
 	}
 ) {
-	return (
-		loopThroughKeys<Value>(obj)
-			.filter(({ key, value }, index) => (options.beforeFilter ? options.beforeFilter(key, value, index) : true))
-			.map(({ key, value }, index) => options.map ? options.map(key, value, index): ({key, value}))
-			.filter(({ key, value }, index) => (options.afterFilter ? options.afterFilter(key, value, index) : true))
-			.reduce((obj, value) => {
-				return { ...obj, [value.key]: value.value }
-			}, {}) as Partial<T>
-	)
+	return loopThroughKeys<Value>(obj)
+		.filter(({ key, value }, index) => (options.beforeFilter ? options.beforeFilter(key, value, index) : true))
+		.map(({ key, value }, index) => (options.map ? options.map(key, value, index) : { key, value }))
+		.filter(({ key, value }, index) => (options.afterFilter ? options.afterFilter(key, value, index) : true))
+		.reduce((obj, value) => {
+			return { ...obj, [value.key]: value.value }
+		}, {}) as Partial<T>
 }
 
 export function loading(time: number = 250) {
@@ -89,4 +89,8 @@ export async function wait(time: number, callback?: () => void) {
 			clearTimeout(timeout)
 		}, Math.max(time, 10))
 	})
+}
+
+export function toAbsolute(...paths: string[]) {
+	return path.resolve(__dirname, ...paths)
 }

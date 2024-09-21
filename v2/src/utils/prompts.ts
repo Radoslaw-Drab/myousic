@@ -231,7 +231,7 @@ export function createTable(columns: DistributeItem[], values: (string[] | null)
 		(opt.endWithSeparator ? opt.separator.trimEnd().length : 0) +
 		(columns.length - 1) * opt.separator.length
 
-	const horizontalLine = '-'.repeat(tableWidth)
+	const horizontalLine = '-'.repeat(tableWidth).grey
 
 	const headerContent = distributeContent(columns, opt)
 	const heading = opt.headerColor ? opt.headerColor(headerContent) : headerContent
@@ -241,7 +241,7 @@ export function createTable(columns: DistributeItem[], values: (string[] | null)
 		fullHeading +
 		values.reduce((str, row, index) => {
 			const isHorizontalLine = row === null
-			const clr = opt.contrastedRows ? (index % 2 === 0 ? color.gray : color.white) : null
+			const clr = opt.contrastedRows ? (index % 2 === 0 ? color.white : color.grey) : null
 			const content = !isHorizontalLine
 				? distributeContent(
 						row.map((col, index) => ({ ...columns[index], value: col })),
@@ -262,7 +262,8 @@ export function createTrackDataTable(track: Track) {
 		':' +
 		(timeSeconds - Math.floor(timeSeconds / 60) * 60).toString().padStart(2, '0')
 	const table = createTable(
-		[{ value: 'Names' }, { value: 'Values', percent: 0.8 }],
+		// [{ value: 'Names' }, { value: 'Values', percent: 0.8 }],
+		[{ value: 'Names', size: 20 }, { value: 'Values' }],
 		[
 			['Artist', track.artistName],
 			['Track', track.trackName],
@@ -272,10 +273,8 @@ export function createTrackDataTable(track: Track) {
 			['Time', time],
 			['Explicitness', track.trackExplicitness],
 			null,
-			['Disc number', track.discNumber?.toString() ?? '1'],
-			['Disc count', track.discCount?.toString() ?? '1'],
-			['Track number', track.trackNumber?.toString() ?? '1'],
-			['Track count', track.trackCount?.toString() ?? '1'],
+			['Track', track.trackNumber?.toString() ?? '1' + '/' + track.trackCount?.toString() ?? '1'],
+			['Disc', track.discNumber?.toString() ?? '1' + '/' + track.discCount?.toString() ?? '1'],
 			null,
 			['Artwork URL', track.artworkUrl100.replace(/100x100/g, '1000x1000')],
 			['Lyrics URL', getLyrics(track)]
@@ -287,3 +286,5 @@ export function createTrackDataTable(track: Track) {
 	)
 	console.log(table)
 }
+
+export function createSettingsPrompt() {}
