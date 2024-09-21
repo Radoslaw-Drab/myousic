@@ -1,22 +1,24 @@
 import inquirer from 'inquirer'
 import autocomplete from 'inquirer-autocomplete-standalone'
 import color from 'colors'
+import cp from 'copy-paste'
 
 import { loopThroughKeys, loading } from 'utils'
-import { createViewName, distributeContent, returnToMainMenuPrompt } from 'utils/prompts'
+import { createTrackDataTable, createViewName, distributeContent, returnToMainMenuPrompt } from 'utils/prompts'
 import constants from 'const'
 
 import { ApiResults, Data, Track } from 'types/api'
-import { Modifier } from 'types/app'
+import { AppConfig, Modifier } from 'types/app'
 
-const searchView = (options?: { searchTerm?: string }, originalView?: () => Promise<void>) =>
+const searchView = (options?: { searchTerm?: string; config: AppConfig }, originalView?: () => Promise<void>) =>
 	new Promise<Track | void>(async (resolve, reject: ({ error: string, customError: boolean }) => void) => {
-		const { searchTerm } = options
+		const searchTerm = options?.searchTerm
+
 		createViewName('Search')
 
 		let search = searchTerm,
 			searchType = ['artistTerm', 'songTerm'],
-			explicitness = true
+			explicitness = !!options?.config.get('includeExplicitContentByDefault')
 
 		if (!searchTerm) {
 			const answers = await inquirer.prompt<{
@@ -28,7 +30,7 @@ const searchView = (options?: { searchTerm?: string }, originalView?: () => Prom
 					type: 'input',
 					name: 'search',
 					message: 'Search term:',
-					default: searchTerm
+					default: searchTerm ?? 'clipboard'
 				},
 				{
 					type: 'checkbox',
@@ -59,7 +61,9 @@ const searchView = (options?: { searchTerm?: string }, originalView?: () => Prom
 					type: 'confirm'
 				}
 			])
-			search = answers.search
+			if (answers.search === 'clipboard') {
+				search = cp.paste()
+			} else search = answers.search
 			searchType = answers.searchType
 			explicitness = answers.explicitness
 		}
@@ -170,6 +174,8 @@ const searchView = (options?: { searchTerm?: string }, originalView?: () => Prom
 				}
 			})
 			if (!originalView) {
+				console.clear()
+				createTrackDataTable(answer)
 				resolve(returnToMainMenuPrompt(searchView))
 			} else {
 				console.clear()

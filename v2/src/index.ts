@@ -6,6 +6,7 @@ import settings from 'views/settings'
 import download from 'views/download'
 
 import { Config } from 'utils/class'
+import { toAbsolute } from 'utils'
 
 import { Settings } from 'types/app'
 
@@ -18,7 +19,8 @@ async function init() {
 		artworkFormat: 'jpg',
 		audioFormats: ['alac', 'aac', 'm4a', 'mp3'],
 		artworkSize: 1000,
-		saveFolder: './Music'
+		saveFolder: toAbsolute('./Music'),
+		includeExplicitContentByDefault: false
 	})
 
 	console.clear()
@@ -55,7 +57,7 @@ async function init() {
 				await search()
 				break
 			case 'download':
-				await download()
+				await download({ config })
 				break
 			case 'settings':
 				await settings({ config })

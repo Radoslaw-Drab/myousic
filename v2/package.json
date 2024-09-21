@@ -11,7 +11,7 @@
 		"start": "concurrently -c auto -n ESBUILD,NODE \"node esbuild.mjs\" \"node --watch dist/index.js\"",
 		"build-only": "node esbuild.mjs",
 		"node-only": "node --watch dist/index.js",
-		"prebuild": "shx rm -rf ./dist && shx mkdir dist && shx cp ./settings.json dist/",
+		"prebuild": "shx rm -rf ./dist && shx mkdir dist",
 		"build": "node esbuild.build.mjs && pkg ."
 	},
 	"devDependencies": {

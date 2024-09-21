@@ -3,13 +3,16 @@ import cp from 'copy-paste'
 
 import { getCommand } from 'utils/exec'
 import { createTrackDataTable, createViewName, returnToMainMenuPrompt } from 'utils/prompts'
-import { createObjectFromArray, mapObjectsArrayToObject, loopThroughKeys, filterObjectValues } from 'utils'
+import { createObjectFromArray, filterObjectValues } from 'utils'
 
 import searchView from './search'
 
-const downloadView = (options?: { withTerm?: boolean }) =>
+import { AppConfig } from 'types/app'
+
+const downloadView = (options?: { withTerm?: boolean; config: AppConfig }) =>
 	new Promise<void>(async (resolve, reject) => {
-		const { withTerm } = options
+		const withTerm = options?.withTerm
+		const config = options?.config
 		createViewName('Download')
 
 		const answer = await inquirer.prompt<{ url: string | 'clipboard' }>({
@@ -67,14 +70,15 @@ const downloadView = (options?: { withTerm?: boolean }) =>
 		}
 		// Gets track
 		try {
-			const track = await searchView({ searchTerm: withTerm ? `${termAnswer.artist} - ${termAnswer.song}` : term }, downloadView)
+			const track = await searchView(
+				{ searchTerm: withTerm ? `${termAnswer.artist} - ${termAnswer.song}` : term, config },
+				downloadView
+			)
 			if (track) {
 				// console.log(track)
 				createTrackDataTable(track)
 			}
 		} catch (error) {
-			console.clear()
-			// console.log('>>>', error)
 			return reject('There was some error: ' + error)
 			// return resolve(await downloadView(true))
 		}
