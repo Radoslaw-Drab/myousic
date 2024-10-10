@@ -178,6 +178,7 @@ export function distributeContent(content: DistributeItem[], options?: Partial<D
 		function addSeparator() {
 			if (index < array.length - 1) return opt.separator
 			else if (index === array.length - 1 && opt.endWithSeparator) return opt.separator.trimEnd()
+			return ''
 		}
 		// Creates substring of the value
 		function substring(size: number, isFixed: boolean = false) {
@@ -273,14 +274,16 @@ export function createTrackDataTable(track: Track) {
 			['Time', time],
 			['Explicitness', track.trackExplicitness],
 			null,
-			['Track', track.trackNumber?.toString() ?? '1' + '/' + track.trackCount?.toString() ?? '1'],
-			['Disc', track.discNumber?.toString() ?? '1' + '/' + track.discCount?.toString() ?? '1'],
+			['Track', (track.trackNumber?.toString() ?? '1') + '/' + (track.trackCount?.toString() ?? '1')],
+			['Disc', (track.discNumber?.toString() ?? '1') + '/' + (track.discCount?.toString() ?? '1')],
 			null,
 			['Artwork URL', track.artworkUrl100.replace(/100x100/g, '1000x1000')],
 			['Lyrics URL', getLyrics(track)]
 		],
 		{
-			wrap: true
+			wrap: true,
+			endWithSeparator: false,
+			startWithSeparator: false
 			// maxSize: 130
 		}
 	)
