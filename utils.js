@@ -3,7 +3,8 @@ const readline = require('readline').createInterface({
 	input: process.stdin,
 	output: process.stdout
 })
-const COMMAND_DIRECTORY = '/yt-dlp-directory/'
+
+const COMMAND_DIRECTORY = '/opt/homebrew/opt/yt-dlp/libexec/bin'
 const SETTINGS = require('./settings.json')
 const COMMANDS = require('./commands.json')
 const KEYWORDS = require('./keywords.json')
