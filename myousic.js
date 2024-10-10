@@ -302,7 +302,7 @@ async function script() {
 		const otherGenres = `${GENRES_BASE_URL}${genresArtistName}-${genresTrackName}-lyrics#song-info`.replaceAll('--', '-')
 
 		// Replaces everything inside of () with 'feat' or 'ft' inside
-		const replaceRegex = new RegExp(/\(*(ft|feat).*/, 'gi')
+		const replaceRegex = new RegExp(/\(*(ft|feat)\.*/, 'gi')
 
 		const artistName = song.artistName.replace(replaceRegex, '').replace(/\W/g, '')
 		const trackName = song.trackName.replace(replaceRegex, '').replace(/\W/g, '')
