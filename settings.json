@@ -2,8 +2,12 @@
 	"ARTWORK_SIZE": 1000,
 	"ARTWORK_FORMAT": "jpg",
 	"DEFAULT_AUDIO_FORMAT": "m4a",
-	"MUSIC_FOLDER": "~/Downloads/",
-	"DEFAULT_LIMIT": 100,
-	"DEFAULT_OPTIONS": "--url",
-	"SCHEMES": { "Download": "--download --add-lyrics", "MySchemeExample": "--other-genres --open-lyrics" }
+	"MUSIC_FOLDER": "~/Music/Music/Media.localized/Automatically Add to Music.localized/",
+	"DEFAULT_LIMIT": 200,
+	"DEFAULT_OPTIONS": "--url --download --add-lyrics --add-genres --open-lyrics",
+	"SCHEMES": {
+		"Download": "--download",
+		"Lyrics": "--add-lyrics --open-lyrics",
+		"Default": "--download --add-lyrics --add-genres --open-lyrics"
+	}
 }
