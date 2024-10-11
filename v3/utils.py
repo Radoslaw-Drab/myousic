@@ -172,7 +172,7 @@ class List:
   ordered: bool
   loop: bool
   multiple: bool
-  selected: list[int]
+  selected: list[int] = []
 
   def __init__(self, title: str, items: list[str], loop: bool = True, ordered: bool = True, multiple: bool = False):
     self.title = title
@@ -198,12 +198,18 @@ class List:
     else:
       self.__currentIndex = clamp(self.__currentIndex + 1, 0, len(self.items) - 1)
     self.show()
+  def __select(self): 
+    if self.__currentIndex in self.selected:
+      self.selected = filter(self.selected, lambda i: i != self.__currentIndex)
+    else:
+      self.selected.append(self.__currentIndex)
       
   def start(self):
     self.show()
     
     keyboard.add_hotkey('up', lambda: self.__up())
     keyboard.add_hotkey('down', lambda: self.__down())
+    keyboard.add_hotkey('space', lambda: self.__select())
     keyboard.wait('enter')
     clear()
     return self.__currentIndex
@@ -213,12 +219,14 @@ class List:
     for index in range(len(self.items)):
       item = self.items[index]
       prefix = f'{index + 1}.' if self.ordered else '-'
-      
+      isSelected = index in self.selected
       term = prefix + ' ' + item
       if index == self.__currentIndex:
         print(self.__colors.change(term, self.__colors.text['BLUE']))
+      elif isSelected:
+        print(self.__colors.change(term, self.__colors.options['ITALIC']))
       else:
         print(term)
 
 
-print(List('Test', ['One', 'Two', 'Three', 'Four']).start())
+print(List('Test', ['One', 'Two', 'Three', 'Four'], multiple=True).start())
