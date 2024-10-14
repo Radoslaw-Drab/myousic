@@ -150,29 +150,34 @@ async function downloadSong(url, song, properties) {
 	// Downloads file in proper format and with proper file name
 	await getCommands(`${COMMAND_DIRECTORY}/yt-dlp -x -f ${format} --audio-quality 0 --add-metadata -o "${musicFile}" ${url}`)
 
-	// Modifies metadata
-	// priettier-ignore-start
-	await getCommands(
-		`exiftool 
-    -title="${song.name}" 
-    -artist="${song.artistName}" 
-    -album="${song.album}" 
-    -albumArtist="${song.artistName}" 
-    "-coverArt<=${coverArtFile}" 
-    -trackNumber="${song.track}" 
-    -discNumber="${song.disc}" 
-    -trackExplicitness="${song.trackExplicitness}" 
-    -genre="${song.genre}" 
-    -releaseDate="${song.date}" 
-    -description="${url}"
-		-longDescription="" 
-		-comment="${otherGenres}"
-		-"lyrics<=${lyricsFile}"
-    "${musicFile}"`
-			.replaceAll(' \n', ' ')
-			.replaceAll('\n', '')
-	)
-	// prietter-ignore-end
+	try {
+		// Modifies metadata
+		// priettier-ignore-start
+		await getCommands(
+			`exiftool 
+			-title="${song.name}" 
+			-artist="${song.artistName}" 
+			-album="${song.album}" 
+			-albumArtist="${song.artistName}" 
+			"-coverArt<=${coverArtFile}" 
+			-trackNumber="${song.track}" 
+			-discNumber="${song.disc}" 
+			-trackExplicitness="${song.trackExplicitness}" 
+			-genre="${song.genre}" 
+			-releaseDate="${song.date}" 
+			-description="${url}"
+			-longDescription="" 
+			-comment="${otherGenres}"
+			-"lyrics<=${lyricsFile}"
+			"${musicFile}"`
+				.replaceAll(' \n', ' ')
+				.replaceAll('\n', '')
+		)
+		// prietter-ignore-end
+	} catch (error) {
+		console.log(error)
+	}	
+	
 
 	// Removes cover art, lyrics and moves music to Music folder
 	await getCommands(
