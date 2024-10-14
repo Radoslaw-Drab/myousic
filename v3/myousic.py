@@ -1,17 +1,20 @@
 from yt_dlp import YoutubeDL
 from uuid import uuid4
+from datetime import datetime
+from tabulate import tabulate, SEPARATING_LINE
+from types import SimpleNamespace
+from itunes import Track
+from utils import List
 import urllib.parse
 import pyperclip
 import re
-import json
 import requests
 import colors
-import utils
-import datetime
-import pick
-import keyboard
+import os
+from config import Config
+import music_tag
 
-cl = colors.colors()
+cl = colors.Color()
 url = pyperclip.paste()
 itunesApiUrl = 'https://itunes.apple.com/search'
 
@@ -25,7 +28,8 @@ options = {
   'outtmpl': f'{id}.%(ext)s',
   'quiet': 'true',
 }
-# yt = YouTube(url)
+config = Config()
+
 with YoutubeDL(options) as ydl:
   info = ydl.extract_info(url, download=False)
 
@@ -43,32 +47,53 @@ with YoutubeDL(options) as ydl:
 
   response = requests.get(f'{itunesApiUrl}?{q}')
   data = response.json()
-  results: dict[str, str] = data['results']
+  results: dict[str, dict] = data['results']
 
   def maxSize(prop: str):
     return max([len(result.get(prop) or '') for result in results]) if len(results) > 0 else 0
-  maxArtistName = maxSize('artistName')
-  maxTrackName = maxSize('trackName')
-  maxCollectionName = maxSize('collectionName')
-
-  options = [f'{d.get('artistName').ljust(maxArtistName)} | {d.get("trackName").ljust(maxTrackName)} | {d.get("collectionName").ljust(maxCollectionName)} | {datetime.datetime.strptime(d["releaseDate"], "%Y-%m-%dT%H:%M:%SZ").year}' for d in results]
-  # utils.clear()
+  def getDate(date: str):
+    return datetime.strptime(date, "%Y-%m-%dT%H:%M:%SZ")
+  maxArtistName = min(maxSize('artistName'), config.data.print_max_artist_size)
+  maxTrackName = min(maxSize('trackName'), config.data.print_max_track_size)
+  maxCollectionName = min(maxSize('collectionName'), config.data.print_max_album_size)
+  
+  test: str = ''
+  options = [f'{d.get('artistName')[:maxArtistName].ljust(maxArtistName)} | {d.get("trackName")[:maxTrackName].ljust(maxTrackName)} | {d.get("collectionName")[:maxCollectionName].ljust(maxCollectionName)} | {getDate(d["releaseDate"]).year}' for d in results]
   title = f"Select for {term}"
 
-  # test = pick.Picker(options, title, indicator='>')
-  # test.start()
-  # print(test)
-  selected, index = pick.pick(options, title, indicator='>')
+  index = List(options, title).getIndex()
+  print(maxArtistName, maxTrackName, maxCollectionName, os.get_terminal_size().columns)
 
+  result = results[index]
+  track: Track = SimpleNamespace(**results[index])
 
-  result: dict[str, str] = results[index]
-  for k in result:
-    print(f"{k}: {result[k]}")
-
+  data = [
+    ['Track', track.trackName],
+    ['Artist', track.artistName],
+    ['Album', track.collectionName],
+    SEPARATING_LINE,
+    ['Genre', track.primaryGenreName],
+    ['Explicitness', track.collectionExplicitness],
+    SEPARATING_LINE,
+    ['Date', getDate(track.releaseDate).year],
+    ['Track', f'{track.trackNumber} / {track.trackCount}'],
+    ['Disc', f'{track.discNumber} / {track.discCount}'],
+    SEPARATING_LINE,
+    ['Artwork', re.sub('100x100', '1000x1000', track.artworkUrl100)]
+  ]
   input()
+  table = tabulate(data, ["Property", "Value"], tablefmt='simple')
 
-  # author = yt.author
-  # title = yt.title
+  index = List(["Download", "Search lyrics"], "Action", beforeScreen=table, horizontal=True).getIndex()
+  fileInfo = SimpleNamespace(**ydl.extract_info(url))
+  # print(fileInfo.audio_ext)
+  # input('Wait')
+
+
+  # file = music_tag.load_file(f'{id}.{fileInfo.audio_ext}')
+  # print(file.values)
+  # file['title'] = track.trackName
+  # file['author'] = track.artistName
 
   # print(author, title, sep=' | ')
   # print(yt.streams.filter(only_audio=True))
@@ -76,3 +101,5 @@ with YoutubeDL(options) as ydl:
 
 # print('Some videos failed to download' if error_code
 #       else 'All videos successfully downloaded')
+
+

@@ -136,51 +136,41 @@ table = Table([{"id": 'id', "value": "Id", "percent": "min"}, {"id": 'value', "v
 #   ["Other", "hehe", "Test"],
 
 # ])
-selected = 1
 
-def show_menu():
-    global selected
-    print("\n" * 30)
-    print("Choose an option:")
-    for i in range(1, 5):
-        print("{1} {0}. Do something {0} {2}".format(i, ">" if selected == i else " ", "<" if selected == i else " "))
-
-def up():
-    global selected
-    if selected == 1:
-        return
-    selected -= 1
-    show_menu()
-
-def down():
-    global selected
-    if selected == 4:
-        return
-    selected += 1
-    show_menu()
-
-# show_menu()
-# keyboard.add_hotkey('up', up)
-# keyboard.add_hotkey('down', down)
-# keyboard.wait()
-
+cl = colors.Color()
+class ListItem(dict):
+  id: str
+  name: str | None = None
 class List:
-  __currentIndex: int = 0
-  __colors = colors.Colors()
-  title: str = 'Select:'
-  items: list[str]
-  ordered: bool
-  loop: bool
-  multiple: bool
-  selected: list[int] = []
-
-  def __init__(self, title: str, items: list[str], loop: bool = True, ordered: bool = True, multiple: bool = False):
+  # __currentIndex: int = 0
+  # title: str = 'Select:'
+  # items: list[ListItem] = []
+  # ordered: bool
+  # loop: bool
+  # multiple: bool
+  # selected: list[int] = []
+  # prefix: str | None
+  # selector: str = '>'
+  # showCount: int = 10
+  # beforeScreen: str | None = None
+  def __init__(self, items: list[ListItem | str], title: str | None = None, loop: bool = True, ordered: bool = True, multiple: bool = False, prefix: str | None = None, selector: str = '>', showCount: int = 10, beforeScreen: str | None = None, horizontal: bool = False):
+    self.items = []
+    self.selected = []
+    self.__currentIndex = 0
+    for item in items:
+      if type(item) is str:
+        self.items.append({"id": item})
+      else:
+        self.items.append(item)
     self.title = title
-    self.items = items 
     self.loop = loop
     self.ordered = ordered
     self.multiple = multiple
-    pass
+    self.prefix = prefix
+    self.selector = selector
+    self.showCount = showCount
+    self.beforeScreen = beforeScreen
+    self.horizontal = horizontal
   def __up(self):
     if self.loop:
       self.__currentIndex -= 1
@@ -198,35 +188,80 @@ class List:
     else:
       self.__currentIndex = clamp(self.__currentIndex + 1, 0, len(self.items) - 1)
     self.show()
-  def __select(self): 
-    if self.__currentIndex in self.selected:
-      self.selected = filter(self.selected, lambda i: i != self.__currentIndex)
+  def selectAllToggle(self):
+    if len(self.selected) == len(self.items):
+      self.selected = []
     else:
-      self.selected.append(self.__currentIndex)
+      self.selected = [i for i in range(len(self.items))]
+    self.show()
+  def __selectCurrent(self):
+    self.__select(self.__currentIndex)
+  def __select(self, index: int): 
+    if index in self.selected:
+      self.selected = list(filter(lambda i: i != index, self.selected))
+    else:
+      self.selected.append(index)
+    self.show()
       
-  def start(self):
+  def getIndex(self):
     self.show()
     
     keyboard.add_hotkey('up', lambda: self.__up())
     keyboard.add_hotkey('down', lambda: self.__down())
-    keyboard.add_hotkey('space', lambda: self.__select())
+    if self.multiple:
+      keyboard.add_hotkey('space', lambda: self.__selectCurrent())
+      keyboard.add_hotkey('ctrl+a', lambda: self.selectAllToggle())
+
     keyboard.wait('enter')
     clear()
     return self.__currentIndex
+  def getValue(self) -> str:
+    index = self.getIndex()
+    return self.items[index].get('id')
   def show(self):
     clear()
-    print(self.title)
-    for index in range(len(self.items)):
-      item = self.items[index]
-      prefix = f'{index + 1}.' if self.ordered else '-'
-      isSelected = index in self.selected
-      term = prefix + ' ' + item
-      if index == self.__currentIndex:
-        print(self.__colors.change(term, self.__colors.text['BLUE']))
-      elif isSelected:
-        print(self.__colors.change(term, self.__colors.options['ITALIC']))
+    if self.beforeScreen != None:
+      print(self.beforeScreen)
+      if self.title != None:
+        print(cl.change(''.rjust(len(self.title), '-'), cl.text.GREY))
+
+    showCountHalf = round(self.showCount / 2)
+    greaterThanShowCount = len(self.items) >= self.showCount
+    items = list(filter(lambda i: i >= self.__currentIndex - showCountHalf and i <= self.__currentIndex + showCountHalf, range(len(self.items))))
+    reversedItems = self.items.copy()
+    reversedItems.reverse()
+
+    if len(items) < self.showCount and len(self.items) > self.showCount:
+      if items[len(items) - 1] >= len(self.items) - 1: 
+        for index in range(self.showCount - len(items)):
+          items.append(index)
       else:
-        print(term)
+        for index in range(len(reversedItems) - 1, len(reversedItems) - self.showCount + len(items) - 1, -1):
+          items.insert(0, index)
 
+    if self.multiple:
+      print(cl.change('(SPACE to select, CTRL+A for All)', cl.text.GREY))
+    if self.title != None:
+      if self.prefix != None:
+        print(cl.change(self.prefix, cl.text.BLUE), end=' ')
+      print(self.title)
+    if greaterThanShowCount:
+      print(cl.change(''.rjust(len(self.title), '-'), cl.text.GREY))
 
-print(List('Test', ['One', 'Two', 'Three', 'Four'], multiple=True).start())
+    for index in items:
+      item = self.items[index]
+      value = item.get('name') or item.get('id')
+      prefix = (f'{index + 1}'.rjust(len(str(len(items)))) + '.' if self.ordered else '-') + ' ' if not self.horizontal else ''
+      isSelected = index in self.selected
+      isCurrentIndex = index == self.__currentIndex
+      term = (f'{self.selector} ' if isSelected else '  ') + prefix + value if self.multiple else prefix + value
+
+      end = '\n' if not self.horizontal or (self.horizontal and index == len(items) - 1) else ' | '
+      if index == 0 and greaterThanShowCount and not self.horizontal:
+        print(cl.change('---', cl.text.GREY))
+      if isCurrentIndex:
+        print(cl.change(term, cl.text.BLUE), end='')
+      else:
+        print(term, end='')
+      print(end, end='')
+    print()
