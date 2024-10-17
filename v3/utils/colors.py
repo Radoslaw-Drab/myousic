@@ -1,5 +1,3 @@
-from enum import Enum
-
 class OptionsColor():
   END = '\33[0m'
   BOLD = '\33[1m'
@@ -52,8 +50,6 @@ class Color:
   background = BackgroundColor()
 
   def change(self, text: str, *colorType: list[Colors]):
-    # str = colorType
-    # if type(colorType) is list:
     str = ''
     for t in colorType:
       str += f'{t}'
