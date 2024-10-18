@@ -69,9 +69,14 @@ class Genre:
   def get_url(self, artist: str, title: str):
     _artist = urllib.parse.quote_plus(artist) if self.__parse else re.sub('/$', '', re.sub('^/', '', artist))
     _title = urllib.parse.quote_plus(title) if self.__parse else re.sub('/$', '', re.sub('^/', '', title))
-    # return (self.page_url + '/' + urllib.parse.quote_plus(artist) + '/' + urllib.parse.quote_plus(title) + '/+tags').lower()
-    # return (self.page_url + '/' + re.sub('/$', '', artist) + '/' + re.sub('/$', '', title) + '/+tags').lower()
-    return (self.page_url + '/' + _artist + '/' + _title + '/+tags').lower()
+    url = (self.page_url + '/' + _artist + '/' + _title + '/+tags').lower()
+
+    page = requests.get(url)
+    if not page.ok and self.__parse == False:
+      self.parse(True)
+      return self.get_url(artist, title)
+    return url
+    
   def get(self, artist: str, title: str):
     page = requests.get(self.get_url(artist, title))
     soup = BeautifulSoup(page.content, 'html.parser')
@@ -87,6 +92,10 @@ class Genre:
     new_str = ''
     pre = prefix if prefix != None else ''
     suf = suffix if suffix != None else ''
-    for genre in self.get(artist, title):
+    genres = self.get(artist, title)
+    if len(genres) == 0:
+      return '-'
+
+    for genre in genres:
       new_str += pre + genre + suf + splitter
     return new_str
