@@ -81,27 +81,35 @@ def main(search: str | None = None):
     maxTrackName = min(maxSize('trackName'), config.data.print_max_track_size)
     maxCollectionName = min(maxSize('collectionName'), config.data.print_max_album_size)
 
-    
-    options: list[str] = []
-
     def get_result(dictionary: dict, prop: str, max_size: int):
       return (dictionary.get(prop)[:max_size] if dictionary.get(prop) != None else '-').ljust(max_size)
 
-    for r in results:
-      artistName = get_result(r, 'artistName', maxArtistName)
-      trackName = get_result(r, 'trackName', maxTrackName)
-      collectionName = get_result(r, 'collectionName', maxCollectionName)
-      year = get_date(r.get('releaseDate')).year if r.get('releaseDate') != None else '-'
-      options.append(f'{artistName} | {trackName} | {collectionName} | {year}')
+    def sort_results(sort_by: str | None, sort_type: SortType = SortType.ASC):
+      options: list[str] = []
+      sorted_results = sorted(results, key=lambda d: d[config.get_sort_key(sort_by)], reverse=sort_type == SortType.DESC) if sort_by != None else results
+      for r in sorted_results:
+        artistName = get_result(r, 'artistName', maxArtistName)
+        trackName = get_result(r, 'trackName', maxTrackName)
+        collectionName = get_result(r, 'collectionName', maxCollectionName)
+        year = get_date(r.get('releaseDate')).year if r.get('releaseDate') != None else '-'
+        options.append(f'{trackName} | {artistName} | {collectionName} | {year}')
+      return options
 
-    title = f"Select for {term} ({len(options)})"
+    title = f"Select for {cl.change(term, cl.text.BLUE)}"
 
-
-    index = List(options, title).get_index() if len(options) > 1 else 0
-
+    index = List(sort_results(None, config.data.sort_type), title, sort_types=['title', 'artist', 'album', 'year'], sort_listener=sort_results, show_count=config.data.show_count).__repr__() if len(options) > 1 else 0
+    
+    
     t = TrackExtended(SimpleNamespace(**results[index]), id, config=config)
-    track = t.value
 
+    get_track(ydl, t)
+    print(cl.change('Press enter to end', cl.text.GREY))
+    keyboard.wait('enter')
+
+def get_track(ydl: YoutubeDL, t: TrackExtended):
+  def get_table(t: TrackExtended):
+    t
+    track = t.value
     data = [
       ['Track', track.trackName],
       ['Artist', track.artistName],
@@ -115,35 +123,42 @@ def main(search: str | None = None):
       ['Track', f'{track.trackNumber} / {track.trackCount}'],
       ['Disc', f'{track.discNumber} / {track.discCount}'],
       SEPARATING_LINE,
-      ['Artwork', t.get_artwork_url()],
-      ['Lyrics', t.get_lyrics_url()],
-      ['Genres', t.get_genres_url()]
+      ['Artwork', cl.change(t.get_artwork_url(), cl.options.URL)],
+      ['Lyrics', cl.change(t.get_lyrics_url(), cl.options.URL)],
+      ['Genres', cl.change(t.get_genres_url(), cl.options.URL)]
     ]
 
     table = tabulate(data, tablefmt='simple')
+    return table
 
-    id = List([
-        { "id": "download", "name": "Download" }, 
-        { "id": "download-bare", "name": "Download without data" }, 
-        # { "id": "download-lyrics", "name": "Download without lyrics" }, 
-        # { "id": "download-genres", "name": "Download without genres" }, 
-        { "id": 'exit', "name": 'Exit' }
-      ], beforeScreen=table, horizontal=True).get_value()
-    download = id != 'exit'
-    get_lyrics = id != 'download-lyrics'
-    get_genres = id != 'download-genres'
-    
-    fileInfo = SimpleNamespace(**ydl.extract_info(url, download=download))
+  valid_lyrics = t.check_lyrics()
+  valid_genres = t.check_genres()
+  table = get_table(t)
+  before_screen = table
+
+  if not valid_lyrics:
+    before_screen += cl.change('\nCouldn\'t find lyrics', cl.text.RED)
+  if not valid_genres:
+    before_screen += cl.change('\nCouldn\'t find genres', cl.text.RED)
+
+  id = List([
+      { "id": "download", "name": "Download" }, 
+      { "id": "download-bare", "name": "Download without data" }, 
+      { "id": 'exit', "name": 'Exit' }
+    ], before_screen=before_screen, horizontal=True, show_info=False).get_value()
+  download = id == 'download' or id == 'download-bare'
+  get_lyrics = id != 'download-lyrics'
+  get_genres = id != 'download-genres'
+  
+  fileInfo = SimpleNamespace(**ydl.extract_info(url, download=download))
+  if download:
     t.assign_file(fileInfo.audio_ext)
-    if download and id != 'download-bare':
-      t.metadata(get_lyrics=get_lyrics, get_genres=get_genres)
-     
+  if download and id != 'download-bare':
+    t.metadata(get_lyrics=get_lyrics, get_genres=get_genres)
+    
 
-    print(table)
+  print(table)
+  if download:
     print(cl.change('Downloaded', cl.text.GREEN))
-    print(cl.change('Press enter to end', cl.text.GREY))
-    keyboard.wait('enter')
-
     t.save()
-
 main()
