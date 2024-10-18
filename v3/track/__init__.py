@@ -56,7 +56,7 @@ class TrackExtended:
     self.config = config
     self.audio_ext = None
     self.__is_saved = False
-
+    self.Lyrics = Lyrics()
     self.Genre = Genre(
       excluded_genres=[f'^{self.value.primaryGenreName}$', *self.config.data.excluded_genres], 
       included_genres=self.config.data.included_genres,
@@ -76,7 +76,7 @@ class TrackExtended:
     os.makedirs(dir, exist_ok=True)
     return dir
   def get_filename(self, is_temporary: bool = True):
-    return f'{self.audio_file_id if is_temporary else f'{self.value.artistName} - {self.value.trackName}'}'
+    return f'{self.audio_file_id if is_temporary else re.sub('/', '_', f'{self.value.artistName} - {self.value.trackName}')}'
   def get_file(self, is_temporary: bool = True):
     if self.audio_ext == None:
       raise ValueError('No extension provided')
@@ -103,19 +103,21 @@ class TrackExtended:
   def get_artwork_url(self, size: int = 1000):
     return re.sub('100x100', f'{max(size, 100)}x{max(size, 100)}', self.value.artworkUrl100)
   def get_lyrics_url(self):
-    return Lyrics().get_url(self.config.modify_lyrics(ReplacementProp.ARTIST, self.value.artistName), self.config.modify_lyrics(ReplacementProp.TITLE, self.value.trackName))
+    return self.Lyrics.get_url(self.config.modify_lyrics(ReplacementProp.ARTIST, self.value.artistName), self.config.modify_lyrics(ReplacementProp.TITLE, self.value.trackName))
   def get_artwork_ext(self):
     return re.match('\\..+$', self.value.artworkUrl100)
   def get_lyrics(self):
     lyricsFile = self.get_child_file('txt')
-    lyrics = Lyrics().get_to_file(lyricsFile, self.config.modify_lyrics(ReplacementProp.ARTIST, self.value.artistName), self.config.modify_lyrics(ReplacementProp.TITLE, self.value.trackName))
-
-    if lyrics == None:
-      print(cl.change(f'Couldn\'t find song with {self.value.artistName} - {self.value.trackName}', cl.text.RED))
-      artist = input('Artist: ')
-      title = input('Title: ')
-      lyrics = Lyrics().get_to_file(lyricsFile, artist, title)
+    lyrics = self.Lyrics.get_to_file(lyricsFile, self.config.modify_lyrics(ReplacementProp.ARTIST, self.value.artistName), self.config.modify_lyrics(ReplacementProp.TITLE, self.value.trackName))
     return lyrics
+  def check_lyrics(self):
+    if self.get_lyrics() == None:
+      return False
+    return True
+  def check_genres(self):
+    import requests
+    return requests.get(self.get_genres_url()).ok
+
   def get_genres_url(self):
     self.Genre.parse(False)
     return self.Genre.get_url(self.config.modify_genres(ReplacementProp.ARTIST, self.value.artistName), self.config.modify_genres(ReplacementProp.TITLE, self.value.trackName))
