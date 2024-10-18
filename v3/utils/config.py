@@ -38,6 +38,7 @@ class ConfigType(PrintConfig):
   replace_genres: dict[str, str]
   lyrics_regex: Replacement
   genres_regex: Replacement
+  show_count: int
 
 defaultConfigType: ConfigType = {
   "print_max_artist_size": 35,
@@ -52,7 +53,8 @@ defaultConfigType: ConfigType = {
   "lyrics_regex": {},
   "genres_regex": {},
   "sort": None,
-  "sort_type": "asc"
+  "sort_type": "asc",
+  "show_count": 10
 }
   
 class Config:
@@ -86,8 +88,8 @@ class Config:
       newText = re.sub(regEx, regExs[regEx], newText)
 
     return newText
-  def get_sort_key(self):
-    sort = self.data.sort
+  def get_sort_key(self, key: str | None = None):
+    sort = self.data.sort if key == None else key
     if sort == 'title':
       return 'trackName'
     elif sort == 'artist':

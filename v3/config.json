@@ -6,6 +6,7 @@
   "output_folder": "music",
   "artwork_size": 1000,
   "sort_type": "asc",
+  "show_count": 10,
   "replace_genres": {
     "(?!Alternative)Alt": "Alternative"
   },
