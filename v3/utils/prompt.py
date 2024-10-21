@@ -13,10 +13,9 @@ class ListItem(dict):
   name: str | None = None
 class ListSortFunction(Callable[[str, SortType], list[ListItem | str]]):
   pass
-
 class List:
   def __init__(self, items: list[ListItem | str | None], title: str | None = None, loop: bool = True, ordered: bool = True, multiple: bool = False, prefix: str | None = None, selector: str = '>', show_count: int = 10, before_screen: str | None = None, horizontal: bool = False, sort_types: list[str] | None = None, sort_listener: ListSortFunction | None = None, show_info: bool = True):
-    self.items = self.__set_items(items)
+    self.items: list[ListItem] = self.__set_items(items)
     self.selected = []
     self.__current_index: int = 0
 
@@ -37,14 +36,14 @@ class List:
     self.__set_ended(False)
 
     self.__sort_listener = Listener() 
-
+    
     if sort_listener:
       self.__sort_listener.set(sort_listener)
   
   def __repr__(self):
     return self.get_index()
   
-  def __set_items(self, items: list[ListItem | str], replace: bool = True):
+  def __set_items(self, items: list[ListItem | str | None], replace: bool = True):
     new_items: list[ListItem] = [] if replace else self.items
 
     for item in items:
@@ -107,7 +106,7 @@ class List:
       keyboard.add_hotkey('page down', lambda: self.__change_sort(-1))
       keyboard.add_hotkey('tab', lambda: self.__change_sort_dir())
     keyboard.add_hotkey('ctrl+i', lambda: self.__toggle_show_info())
-    keyboard.wait('enter')
+    input()
     clear()
     return self.__current_index
   def get_value(self):
@@ -133,7 +132,7 @@ class List:
           items.insert(0, index)
     self.show_info()
 
-    longestItemSize = max(*[len(item.get('name') or item.get('id')) for item in self.items])
+    longestItemSize = max(0, *[len(item.get('name') or item.get('id')) for item in self.items])
     for index in items:
       item = self.items[index]
       value = item.get('name') or item.get('id')
