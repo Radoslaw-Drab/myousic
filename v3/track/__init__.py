@@ -106,14 +106,13 @@ class TrackExtended:
     return self.Lyrics.get_url(self.config.modify_lyrics(ReplacementProp.ARTIST, self.value.artistName), self.config.modify_lyrics(ReplacementProp.TITLE, self.value.trackName))
   def get_artwork_ext(self):
     return re.match('\\..+$', self.value.artworkUrl100)
-  def get_lyrics(self):
+  def get_lyrics(self) -> tuple[str | None, str]:
     lyricsFile = self.get_child_file('txt')
-    lyrics = self.Lyrics.get_to_file(lyricsFile, self.config.modify_lyrics(ReplacementProp.ARTIST, self.value.artistName), self.config.modify_lyrics(ReplacementProp.TITLE, self.value.trackName))
-    return lyrics
+    (lyrics, url) = self.Lyrics.get_to_file(lyricsFile, self.config.modify_lyrics(ReplacementProp.ARTIST, self.value.artistName), self.config.modify_lyrics(ReplacementProp.TITLE, self.value.trackName))
+    return (lyrics, url)
   def check_lyrics(self):
-    if self.get_lyrics() == None:
-      return False
-    return True
+    import requests
+    return requests.get(self.get_lyrics_url()).ok
   def check_genres(self):
     import requests
     return requests.get(self.get_genres_url()).ok
@@ -153,7 +152,7 @@ class TrackExtended:
 
     audio.save()
 
-    lyrics = self.get_lyrics() if get_lyrics else None
+    (lyrics, url) = self.get_lyrics() if get_lyrics else None
     genres = self.get_genres_str() if get_genres else None
 
     if genres != None:

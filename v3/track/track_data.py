@@ -8,23 +8,27 @@ from utils.text import uppercase
 class Lyrics:
   def __init__(self, lyrics_url: str = 'https://lyrist.vercel.app/api'):
     self.lyrics_url = lyrics_url
+    self.lyrics_search_url = re.sub('/api', '', self.lyrics_url)
     self.__custom_url: str | None = None
     pass
   def get_url(self, artist: str, title: str):
     return (self.lyrics_url + '/' + (urllib.parse.quote(artist + '/' + title)) if self.__custom_url == None else self.__custom_url).lower()
-  def get(self, artist: str, title: str) -> str | None:
+  def get(self, artist: str, title: str) -> tuple[str | None, str]:
+    url = self.get_url(artist, title)
     try:
-      response = requests.get(self.get_url(artist, title, self.__custom_url))
-      return re.sub(r'\[.*\]\n', r'\r', re.sub(r'\n{2}', r'\r', response.json()['lyrics']))
+      response = requests.get(url)
+      return (self.format(response.json()['lyrics']), url)
     except:
-      return None
-  def get_to_file(self, file: str, artist: str, title: str):
-    lyrics = self.get(artist, title)
+      return (None, url)
+  def get_to_file(self, file: str, artist: str, title: str, custom_lyrics: str | None = None) -> tuple[str | None, str]:
+    (lyrics, url) = self.get(artist, title) if custom_lyrics == None else (custom_lyrics, '')
     if lyrics != None:
       f = open(file, 'w', encoding='utf-8')
       f.write(lyrics)
-      return lyrics
-    return None
+      return (lyrics, url)
+    return (None, url)
+  def format(self, lyrics: str) -> str:
+    return re.sub(r'\[.*\]\n', r'\r', re.sub(r'\n{2}', r'\r', lyrics))
   
 
 class Genre:
@@ -66,7 +70,7 @@ class Genre:
     for regex in self.replacements.keys():
       newText = re.sub(regex, self.replacements[regex], newText)
     return newText
-  def get_url(self, artist: str, title: str):
+  def get_url(self, artist: str, title: str) -> str:
     _artist = urllib.parse.quote_plus(artist) if self.__parse else re.sub('/$', '', re.sub('^/', '', artist))
     _title = urllib.parse.quote_plus(title) if self.__parse else re.sub('/$', '', re.sub('^/', '', title))
     url = (self.page_url + '/' + _artist + '/' + _title + '/+tags').lower()
