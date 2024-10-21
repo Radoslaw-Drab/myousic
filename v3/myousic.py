@@ -102,9 +102,9 @@ def main(search: str | None = None):
     
     t = TrackExtended(SimpleNamespace(**results[index]), id, config=config)
 
-    get_track(ydl, t)
-    print(cl.change('Press enter to end', cl.text.GREY))
-    keyboard.wait('enter')
+    if get_track(ydl, t):
+      print(cl.change('Press enter to end', cl.text.GREY))
+      keyboard.wait('enter')
 
 def get_track(ydl: YoutubeDL, t: TrackExtended):
   def get_table(t: TrackExtended):
@@ -150,6 +150,9 @@ def get_track(ydl: YoutubeDL, t: TrackExtended):
   get_lyrics = id != 'download-lyrics'
   get_genres = id != 'download-genres'
   
+  if id == 'exit':
+    return False
+  
   fileInfo = SimpleNamespace(**ydl.extract_info(url, download=download))
   if download:
     t.assign_file(fileInfo.audio_ext)
@@ -161,4 +164,7 @@ def get_track(ydl: YoutubeDL, t: TrackExtended):
   if download:
     print(cl.change('Downloaded', cl.text.GREEN))
     t.save()
-main()
+  return True
+
+if __name__ == "__main__":
+  main()
