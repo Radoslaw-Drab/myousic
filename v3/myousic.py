@@ -7,26 +7,19 @@ import urllib.parse, urllib.request
 import pyperclip
 import re
 import requests
-import keyboard
 
 from track import TrackExtended
-from utils.prompt import List
+from utils.prompt import List, Input
 from utils.system import clear
 from utils.config import Config, SortType
 import utils.colors as colors
 
 
 cl = colors.Color()
-url = pyperclip.paste()
 itunesApiUrl = 'https://itunes.apple.com/search'
 
-if not re.match(r'https?:\/\/(youtu\.be)|(youtube\.com)\/.*', url):
-  url = input('Youtube URL: ')
-
-
-def main(search: str | None = None):
+def main(url: str | None = None, search: str | None = None):
   clear()
-  global url, cl, itunesApiUrl
   id = uuid4()
   options = {
     'format': 'm4a/bestaudio/best', 
@@ -56,22 +49,26 @@ def main(search: str | None = None):
       term = search
 
     query = {
-      'term': term
+      'term': term,
+      'limit': 200,
+      'entity': ['musicArtist', 'musicTrack', 'album', 'song']
     }
     q = urllib.parse.urlencode(query, doseq=True)
 
     response = requests.get(f'{itunesApiUrl}?{q}')
-    data = response.json()
+    data: dict = response.json()
+    error = data.get('errorMessage')
+    if error:
+      print(cl.change(error, cl.text.RED))
+      input()
+      return
     # results: list[dict] = data['results']
-    results: list[dict] = sorted(data['results'], key=lambda d: d[config.get_sort_key()], reverse=config.data.sort_type == SortType.DESC) if config.get_sort_key() != None else data['results']
-    
+    results: list[dict] = sorted(data['results'], key=lambda d: d[config.get_sort_key()], reverse=config.data.sort_type == SortType.DESC) if config.get_sort_key() != None else data['results']    
 
 
     if len(results) == 0:
       print(cl.change(f'No results found for', cl.text.RED), cl.change(term, cl.text.BLUE))
-      artist = input('Artist: ')
-      title = input('Title: ')
-      return main(f'{artist} - {title}')
+      return main(search=search_menu())
 
     def maxSize(prop: str):
       return max([len(result.get(prop) or '') for result in results]) if len(results) > 0 else 0
@@ -102,11 +99,11 @@ def main(search: str | None = None):
     
     t = TrackExtended(SimpleNamespace(**results[index]), id, config=config)
 
-    if get_track(ydl, t):
+    if get_track(ydl, url, t):
       print(cl.change('Press enter to end', cl.text.GREY))
-      keyboard.wait('enter')
+      input()
 
-def get_track(ydl: YoutubeDL, t: TrackExtended):
+def get_track(ydl: YoutubeDL, url: str | None, t: TrackExtended):
   def get_table(t: TrackExtended):
     t
     track = t.value
@@ -142,8 +139,8 @@ def get_track(ydl: YoutubeDL, t: TrackExtended):
     before_screen += cl.change('\nCouldn\'t find genres', cl.text.RED)
 
   id = List([
-      { "id": "download", "name": "Download" }, 
-      { "id": "download-bare", "name": "Download without data" }, 
+      { "id": "download", "name": "Download" } if url else None, 
+      { "id": "download-bare", "name": "Download without data" } if url else None, 
       { "id": 'exit', "name": 'Exit' }
     ], before_screen=before_screen, horizontal=True, show_info=False).get_value()
   download = id == 'download' or id == 'download-bare'
@@ -153,11 +150,12 @@ def get_track(ydl: YoutubeDL, t: TrackExtended):
   if id == 'exit':
     return False
   
-  fileInfo = SimpleNamespace(**ydl.extract_info(url, download=download))
-  if download:
-    t.assign_file(fileInfo.audio_ext)
-  if download and id != 'download-bare':
-    t.metadata(get_lyrics=get_lyrics, get_genres=get_genres)
+  if url:
+    fileInfo = SimpleNamespace(**ydl.extract_info(url, download=download))
+    if download:
+      t.assign_file(fileInfo.audio_ext)
+    if download and id != 'download-bare':
+      t.metadata(get_lyrics=get_lyrics, get_genres=get_genres)
     
 
   print(table)
@@ -165,6 +163,21 @@ def get_track(ydl: YoutubeDL, t: TrackExtended):
     print(cl.change('Downloaded', cl.text.GREEN))
     t.save()
   return True
-
+def search_menu():
+  [artist, title] = Input('Artist: ', 'Title: ').start()
+  return f'{artist} - {title}'
+def init():
+  clear()
+  id = List([{"id": "download", "name": "Download"}, {"id": "search", "name": "Search"}], ordered=False, show_info=False, title=cl.change('Myousic', cl.text.BLUE)).get_value()
+  print(id)
+  if id == 'download':
+    url = pyperclip.paste()
+    if not re.match(r'https?:\/\/(youtu\.be)|(youtube\.com)\/.*', url):
+      url = input('Youtube URL: ')
+    main(url=url)
+  elif id == 'search':
+    term = search_menu()
+    main(search=term)
+  
 if __name__ == "__main__":
-  main()
+  init()
