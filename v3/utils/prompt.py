@@ -8,6 +8,18 @@ from utils.system import clear
 
 cl = Color()
 
+class Input:
+  def __init__(self, *prompts: list[str]):
+    self.__prompts = prompts
+    self.__values: list[str] = []
+    pass
+  def start(self, clearScreen: bool = True):
+    if clearScreen:
+      clear()
+    for prompt in self.__prompts:
+      self.__values.append(input(prompt))
+    return self.__values
+
 class ListItem(dict):
   id: str
   name: str | None = None
