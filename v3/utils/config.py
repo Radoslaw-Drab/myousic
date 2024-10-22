@@ -81,7 +81,7 @@ class Config:
 
     regExs: dict[str, str] | None = replacement.get(prop.value)
 
-    if regExs == None:
+    if regExs == None or len(regExs.keys()) == 0:
       return newText
     
     for regEx in regExs.keys():

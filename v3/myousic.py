@@ -20,7 +20,7 @@ cl = colors.Color()
 url = pyperclip.paste()
 itunesApiUrl = 'https://itunes.apple.com/search'
 
-if not re.match(r'https?:\/\/(youtu\.be)|(youtube\.com)\/.*', url):
+if url == None or  not re.match(r'https?:\/\/(youtu\.be)|(youtube\.com)\/.*', url):
   url = input('Youtube URL: ')
 
 
@@ -61,6 +61,10 @@ def main(search: str | None = None):
     q = urllib.parse.urlencode(query, doseq=True)
 
     response = requests.get(f'{itunesApiUrl}?{q}')
+    if not response.ok:
+      print(response.status_code, response.text)
+      input()
+      return
     data = response.json()
     # results: list[dict] = data['results']
     results: list[dict] = sorted(data['results'], key=lambda d: d[config.get_sort_key()], reverse=config.data.sort_type == SortType.DESC) if config.get_sort_key() != None else data['results']
@@ -74,7 +78,7 @@ def main(search: str | None = None):
       return main(f'{artist} - {title}')
 
     def maxSize(prop: str):
-      return max([len(result.get(prop) or '') for result in results]) if len(results) > 0 else 0
+      return max(0, *[len(result.get(prop) or '') for result in results]) if len(results) > 0 else 0
     def get_date(date: str):
       return datetime.strptime(date, "%Y-%m-%dT%H:%M:%SZ")
     maxArtistName = min(maxSize('artistName'), config.data.print_max_artist_size)
@@ -96,11 +100,11 @@ def main(search: str | None = None):
       return options
 
     title = f"Select for {cl.change(term, cl.text.BLUE)}"
-
-    index = List(sort_results(None, config.data.sort_type), title, sort_types=['title', 'artist', 'album', 'year'], sort_listener=sort_results, show_count=config.data.show_count).__repr__() if len(options) > 1 else 0
+    options = sort_results(None, config.data.sort_type)
+    index = List(options, title, sort_types=['title', 'artist', 'album', 'year'], sort_listener=sort_results, show_count=config.data.show_count).get_index() if len(options) > 1 else 0
     
     
-    t = TrackExtended(SimpleNamespace(**results[index]), id, config=config)
+    t = TrackExtended(results[index], id, config=config)
 
     get_track(ydl, t)
     print(cl.change('Press enter to end', cl.text.GREY))

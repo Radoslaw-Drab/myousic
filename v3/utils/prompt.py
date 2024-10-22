@@ -133,7 +133,7 @@ class List:
           items.insert(0, index)
     self.show_info()
 
-    longestItemSize = max(*[len(item.get('name') or item.get('id')) for item in self.items])
+    longestItemSize = max(0, *[len(item.get('name') or item.get('id')) for item in self.items])
     for index in items:
       item = self.items[index]
       value = item.get('name') or item.get('id')
