@@ -18,7 +18,7 @@ import utils.colors as colors
 cl = colors.Color()
 itunesApiUrl = 'https://itunes.apple.com/search'
 
-def main(url: str | None = None, search: str | None = None):
+def main(*, url: str | None = None, search: str | None = None, download_only: bool = False):
   clear()
   id = uuid4()
   options = {
@@ -29,6 +29,10 @@ def main(url: str | None = None, search: str | None = None):
   config = Config()
 
   with YoutubeDL(options) as ydl:
+    if download_only and url:
+      track_download_only(ydl, id=id, url=url, config=config)
+      end()
+      return
     if search == None:
       info = ydl.extract_info(url, download=False)
 
@@ -67,8 +71,7 @@ def main(url: str | None = None, search: str | None = None):
 
 
     if len(results) == 0:
-      print(cl.change(f'No results found for', cl.text.RED), cl.change(term, cl.text.BLUE))
-      return main(search=search_menu())
+      return main(search=search_menu(cl.change(f'No results found for ', cl.text.RED) + cl.change(term, cl.text.BLUE)))
 
     def maxSize(prop: str):
       return max(0, *[len(result.get(prop) or '') for result in results]) if len(results) > 0 else 0
@@ -100,33 +103,36 @@ def main(url: str | None = None, search: str | None = None):
     t = TrackExtended(results[index], id, config=config)
 
     if get_track(ydl, url, t):
-      print(cl.change('Press enter to end', cl.text.GREY))
-      input()
+      end()
 
+def end():
+  print(cl.change('Press enter to end', cl.text.GREY))
+  input()
+def get_table(t: TrackExtended):
+  t
+  track = t.value
+  date = t.get_date()
+  data = [
+    ['Track', track.trackName],
+    ['Artist', track.artistName],
+    ['Album', track.collectionName if track.collectionName else '-'],
+    SEPARATING_LINE,
+    ['Genre', track.primaryGenreName if track.primaryGenreName else '-'],
+    ['Other Genres', t.get_genres_str()],
+    ['Explicitness', track.collectionExplicitness if track.collectionExplicitness else '-'],
+    SEPARATING_LINE,
+    ['Date', date if type(date) is str else date.year],
+    ['Track', f'{track.trackNumber} / {track.trackCount}' if track.trackNumber != None and track.trackCount != None else '-'],
+    ['Disc', f'{track.discNumber} / {track.discCount}' if track.discNumber != None and track.dictCount != None else '-'],
+    SEPARATING_LINE,
+    ['Artwork', cl.change(t.get_artwork_url(), cl.options.URL) if t.get_artwork_url() else '-'],
+    ['Lyrics', cl.change(t.get_lyrics_url(), cl.options.URL)],
+    ['Genres', cl.change(t.get_genres_url(), cl.options.URL)]
+  ]
+
+  table = tabulate(data, tablefmt='simple')
+  return table
 def get_track(ydl: YoutubeDL, url: str | None, t: TrackExtended):
-  def get_table(t: TrackExtended):
-    t
-    track = t.value
-    data = [
-      ['Track', track.trackName],
-      ['Artist', track.artistName],
-      ['Album', track.collectionName],
-      SEPARATING_LINE,
-      ['Genre', track.primaryGenreName],
-      ['Other Genres', t.get_genres_str()],
-      ['Explicitness', track.collectionExplicitness],
-      SEPARATING_LINE,
-      ['Date', t.get_date().year],
-      ['Track', f'{track.trackNumber} / {track.trackCount}'],
-      ['Disc', f'{track.discNumber} / {track.discCount}'],
-      SEPARATING_LINE,
-      ['Artwork', cl.change(t.get_artwork_url(), cl.options.URL)],
-      ['Lyrics', cl.change(t.get_lyrics_url(), cl.options.URL)],
-      ['Genres', cl.change(t.get_genres_url(), cl.options.URL)]
-    ]
-
-    table = tabulate(data, tablefmt='simple')
-    return table
 
   valid_lyrics = t.check_lyrics()
   valid_genres = t.check_genres()
@@ -163,21 +169,49 @@ def get_track(ydl: YoutubeDL, url: str | None, t: TrackExtended):
     print(cl.change('Downloaded', cl.text.GREEN))
     t.save()
   return True
-def search_menu():
-  [artist, title] = Input('Artist: ', 'Title: ').start()
+def track_download_only(ydl: YoutubeDL, *, id: str, url: str, config: Config):
+  track = TrackExtended({}, id, config=config)
+  
+  track.get_missing({
+    'artistName': 'Artist',
+    'trackName': 'Title',
+    'collectionName': 'Album',
+    'releaseDate': 'Release Date',
+    'primaryGenreName': 'Genre',
+    'artworkUrl100': 'Artwork URL',
+  })
+  
+  info = ydl.extract_info(url)
+  track.assign_file(info.get('audio_ext'))
+  track.metadata()
+
+  print(get_table(track))
+  track.save()
+  
+  
+
+def search_menu(title: str | None = 'Search'):
+  [artist, title] = Input(title, 'Artist: ', 'Title: ').start()
   return f'{artist} - {title}'
 def init():
   clear()
-  id = List([{"id": "download", "name": "Download"}, {"id": "search", "name": "Search"}], ordered=False, show_info=False, title=cl.change('Myousic', cl.text.BLUE)).get_value()
+  id = List([
+    {"id": "search-download", "name": "Search and Download"}, 
+    {"id": "search", "name": "Search"}, 
+    {"id": "download", "name": "Download"}, 
+    {"id": "exit", "name": "Exit"}
+    ], ordered=False, show_info=False, title=cl.change('Myousic', cl.text.BLUE)).get_value()
   print(id)
-  if id == 'download':
+  if id == 'download' or id == 'search-download':
     url = pyperclip.paste()
     if not re.match(r'https?:\/\/(youtu\.be)|(youtube\.com)\/.*', url):
       url = input('Youtube URL: ')
-    main(url=url)
+    main(url=url, download_only= id == 'download')
   elif id == 'search':
     term = search_menu()
     main(search=term)
+  elif id == 'exit':
+    return
   
 if __name__ == "__main__":
   init()

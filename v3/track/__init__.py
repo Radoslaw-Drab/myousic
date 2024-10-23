@@ -7,6 +7,8 @@ from pathlib import Path
 import urllib.request, urllib.parse
 import music_tag
 from shutil import move, rmtree
+from utils.prompt import Input
+from utils.system import clear
 from utils.colors import Color
 from utils.config import Config, ReplacementProp
 from track.track_data import Genre, Lyrics
@@ -83,8 +85,11 @@ default_track: Track = {
 }
 class TrackExtended:
   def __init__(self, track: dict, audio_file_id: str, config: Config | None = None):
-    default_track.update(**track)
-    self.value: Track = SimpleNamespace(**default_track)
+    default = default_track.copy()
+    default.update(**track)
+    self.value_dict = default
+    self.update_track(default)
+
     self.temp_folder = config.data.temp_folder or 'tmp'
     self.output_folder = config.data.output_folder or './'
     self.default_artwork_size = max(config.data.artwork_size, 100)
@@ -100,7 +105,36 @@ class TrackExtended:
     )
 
     self.get_dir()
+  def get_missing(self, included: dict = {}, excluded_keys: list[str] = []):
+    keys: dict[str, str] = {}
+    for key in self.value_dict.keys():
+      if len(excluded_keys) > 0 and key in excluded_keys:
+        continue
+      if len(included.keys()) > 0 and key not in included.keys():
+        continue
 
+      if self.value_dict[key] != None:
+        continue
+      
+      keys.update({
+        key: (included.get(key) if len(included.keys()) > 0 else key) + ': '
+      })
+    
+    values = Input('Values', *keys.values()).start()
+    for key_index in range(len(keys.keys())):
+      if values[key_index] == '':
+        continue
+      key = [*keys.keys()][key_index]
+      self.update_track({
+        key: values[key_index]
+      })
+    clear()
+      
+  def update_track(self, track: dict):
+    if not self.value_dict:
+      self.value_dict = default_track.copy()
+    self.value_dict.update(**track)
+    self.value: Track = SimpleNamespace(**self.value_dict)
   def assign_file(self, audio_ext: str):
     self.set_ext(audio_ext)
     move(self.get_file(), os.path.join(self.get_dir(), self.get_file()))
@@ -133,17 +167,17 @@ class TrackExtended:
 
     self.__is_saved = True
 
-
   def get_date(self):
     if self.value.releaseDate == None:
       return datetime.now()
-    return datetime.strptime(self.value.releaseDate, "%Y-%m-%dT%H:%M:%SZ")
+    date_regex = r'\d{2}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z'
+    return datetime.strptime(self.value.releaseDate, "%Y-%m-%dT%H:%M:%SZ") if re.match(date_regex, self.value.releaseDate) else self.value.releaseDate
   def get_artwork_url(self, size: int = 1000):
-    return re.sub('100x100', f'{max(size, 100)}x{max(size, 100)}', self.value.artworkUrl100)
+    return re.sub('100x100', f'{max(size, 100)}x{max(size, 100)}', self.value.artworkUrl100) if self.value.artworkUrl100 else None
   def get_lyrics_url(self):
     return self.Lyrics.get_url(self.config.modify_lyrics(ReplacementProp.ARTIST, self.value.artistName), self.config.modify_lyrics(ReplacementProp.TITLE, self.value.trackName))
   def get_artwork_ext(self):
-    return re.match('\\..+$', self.value.artworkUrl100)
+    return re.match('\\..+$', self.value.artworkUrl100) if self.value.artworkUrl100 else None
   def get_lyrics(self) -> tuple[str | None, str]:
     lyricsFile = self.get_child_file('txt')
     (lyrics, url) = self.Lyrics.get_to_file(lyricsFile, self.config.modify_lyrics(ReplacementProp.ARTIST, self.value.artistName), self.config.modify_lyrics(ReplacementProp.TITLE, self.value.trackName))
@@ -168,11 +202,14 @@ class TrackExtended:
     # Image file name
     artwork_image_filename = self.get_child_file(self.get_artwork_ext() or 'jpg')
 
-    # Saves artwork in temp file
-    with urllib.request.urlopen(self.get_artwork_url(self.default_artwork_size)) as url:
-      with open(artwork_image_filename, 'wb') as f:
-        f.write(url.read())
-    artworkImage = open(artwork_image_filename, 'rb')
+    artwork_url = self.get_artwork_url(self.default_artwork_size)
+
+    if artwork_url:
+      # Saves artwork in temp file
+      with urllib.request.urlopen(artwork_url) as url:
+        with open(artwork_image_filename, 'wb') as f:
+          f.write(url.read())
+    artworkImage = open(artwork_image_filename, 'rb') if artwork_url else None
 
     audio = music_tag.load_file(self.get_temp_audio_path())
     audio['title'] = self.value.trackName
@@ -181,12 +218,13 @@ class TrackExtended:
     audio['album-artist'] = self.value.artistName
     audio['album'] = self.value.collectionName
     audio['genre'] = self.value.primaryGenreName
-    audio['track-number'] = self.value.trackNumber
-    audio['total-tracks'] = self.value.trackCount
-    audio['disc-number'] = self.value.discNumber
-    audio['total-discs'] = self.value.discCount
-    audio['year'] = self.get_date().year
-    audio['artwork'] = artworkImage.read()
+    audio['track-number'] = self.value.trackNumber or 1
+    audio['total-tracks'] = self.value.trackCount or 1
+    audio['disc-number'] = self.value.discNumber or 1
+    audio['total-discs'] = self.value.discCount or 1
+    audio['year'] = self.get_date() if type(self.get_date()) is str else self.get_date().year 
+    if artworkImage:
+      audio['artwork'] = artworkImage.read()
 
     audio.save()
 
