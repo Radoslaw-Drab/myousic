@@ -9,13 +9,16 @@ from utils.system import clear
 cl = Color()
 
 class Input:
-  def __init__(self, *prompts: list[str]):
+  def __init__(self, title: str | None = None, *prompts: list[str]):
     self.__prompts = prompts
     self.__values: list[str] = []
+    self.__title = title
     pass
   def start(self, clearScreen: bool = True):
     if clearScreen:
       clear()
+    if self.__title:
+      print(self.__title)
     for prompt in self.__prompts:
       self.__values.append(input(prompt))
     return self.__values
