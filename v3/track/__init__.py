@@ -1,7 +1,9 @@
 from enum import Enum
+from types import SimpleNamespace
 from datetime import datetime
 import re
 import os
+from pathlib import Path
 import urllib.request, urllib.parse
 import music_tag
 from shutil import move, rmtree
@@ -46,11 +48,45 @@ class Track(dict):
   primaryGenreName: str = None
   isStreamable: bool = None
 
+default_track: Track = {
+  'wrapperType': None,
+  'kind': None,
+  'artistId': None,
+  'collectionId': None,
+  'trackId': None,
+  'artistName': None,
+  'collectionName': None,
+  'trackName': None,
+  'collectionCensoredName': None,
+  'trackCensoredName': None,
+  'artistViewUrl': None,
+  'collectionViewUrl': None,
+  'trackViewUrl': None,
+  'previewUrl': None,
+  'artworkUrl30': None,
+  'artworkUrl60': None,
+  'artworkUrl100': None,
+  'collectionPrice': None,
+  'trackPrice': None,
+  'releaseDate': None,
+  'collectionExplicitness': None, 
+  'trackExplicitness': None,
+  'discCount': None,
+  'discNumber': None,
+  'trackCount': None,
+  'trackNumber': None,
+  'trackTimeMillis': None,
+  'country': None,
+  'currency': None,
+  'primaryGenreName': None,
+  'isStreamable': None,
+}
 class TrackExtended:
-  def __init__(self, track: Track, audio_file_id: str, config: Config | None = None):
-    self.value = track
-    self.temp_folder = os.path.abspath(config.data.temp_folder or 'tmp')
-    self.output_folder = os.path.abspath(config.data.output_folder or './') 
+  def __init__(self, track: dict, audio_file_id: str, config: Config | None = None):
+    default_track.update(**track)
+    self.value: Track = SimpleNamespace(**default_track)
+    self.temp_folder = config.data.temp_folder or 'tmp'
+    self.output_folder = config.data.output_folder or './'
     self.default_artwork_size = max(config.data.artwork_size, 100)
     self.audio_file_id = audio_file_id
     self.config = config
@@ -72,11 +108,13 @@ class TrackExtended:
     self.audio_ext = ext
 
   def get_dir(self, is_temporary: bool = True):
-    dir = os.path.abspath(self.temp_folder if is_temporary else self.output_folder)
-    os.makedirs(dir, exist_ok=True)
-    return dir
+    user_regex = r'^\~\/'
+    is_home = re.match(user_regex, self.output_folder) != None
+    dir = Path.joinpath(Path.cwd(), self.temp_folder) if is_temporary else Path.joinpath(Path.home() if is_home else Path.cwd(), re.sub(user_regex, '', self.output_folder))
+    os.makedirs(str(dir), exist_ok=True)
+    return str(dir)
   def get_filename(self, is_temporary: bool = True):
-    return f'{self.audio_file_id if is_temporary else re.sub('/', '_', f'{self.value.artistName} - {self.value.trackName}')}'
+    return self.audio_file_id if is_temporary else (self.value.artistName + ' - ' + self.value.trackName)
   def get_file(self, is_temporary: bool = True):
     if self.audio_ext == None:
       raise ValueError('No extension provided')
@@ -98,7 +136,7 @@ class TrackExtended:
 
   def get_date(self):
     if self.value.releaseDate == None:
-      return datetime()
+      return datetime.now()
     return datetime.strptime(self.value.releaseDate, "%Y-%m-%dT%H:%M:%SZ")
   def get_artwork_url(self, size: int = 1000):
     return re.sub('100x100', f'{max(size, 100)}x{max(size, 100)}', self.value.artworkUrl100)

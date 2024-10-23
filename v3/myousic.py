@@ -71,7 +71,7 @@ def main(url: str | None = None, search: str | None = None):
       return main(search=search_menu())
 
     def maxSize(prop: str):
-      return max([len(result.get(prop) or '') for result in results]) if len(results) > 0 else 0
+      return max(0, *[len(result.get(prop) or '') for result in results]) if len(results) > 0 else 0
     def get_date(date: str):
       return datetime.strptime(date, "%Y-%m-%dT%H:%M:%SZ")
     maxArtistName = min(maxSize('artistName'), config.data.print_max_artist_size)
@@ -93,11 +93,11 @@ def main(url: str | None = None, search: str | None = None):
       return options
 
     title = f"Select for {cl.change(term, cl.text.BLUE)}"
-
-    index = List(sort_results(None, config.data.sort_type), title, sort_types=['title', 'artist', 'album', 'year'], sort_listener=sort_results, show_count=config.data.show_count).__repr__() if len(options) > 1 else 0
+    options = sort_results(None, config.data.sort_type)
+    index = List(options, title, sort_types=['title', 'artist', 'album', 'year'], sort_listener=sort_results, show_count=config.data.show_count).get_index() if len(options) > 1 else 0
     
     
-    t = TrackExtended(SimpleNamespace(**results[index]), id, config=config)
+    t = TrackExtended(results[index], id, config=config)
 
     if get_track(ydl, url, t):
       print(cl.change('Press enter to end', cl.text.GREY))
