@@ -170,7 +170,7 @@ class TrackExtended:
   def get_date(self):
     if self.value.releaseDate == None:
       return datetime.now()
-    date_regex = r'\d{2}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z'
+    date_regex = r'\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z'
     return datetime.strptime(self.value.releaseDate, "%Y-%m-%dT%H:%M:%SZ") if re.match(date_regex, self.value.releaseDate) else self.value.releaseDate
   def get_artwork_url(self, size: int = 1000):
     return re.sub('100x100', f'{max(size, 100)}x{max(size, 100)}', self.value.artworkUrl100) if self.value.artworkUrl100 else None

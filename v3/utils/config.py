@@ -1,7 +1,7 @@
 from types import SimpleNamespace
+from pathlib import Path
 from enum import Enum
 import json
-import pathlib
 import re
 
 class PrintConfig:
@@ -50,8 +50,14 @@ defaultConfigType: ConfigType = {
   "excluded_genres": [],
   "included_genres": [],
   "replace_genres": {},
-  "lyrics_regex": {},
-  "genres_regex": {},
+  "lyrics_regex": {
+    "artist": {},
+    "title": {}
+  },
+  "genres_regex": {
+    "artist": {},
+    "title": {}
+  },
   "sort": None,
   "sort_type": "asc",
   "show_count": 10
@@ -64,7 +70,10 @@ class Config:
   json_data: dict[str, any]
   def __init__(self, path: str = './'):
     self.path = path
-    file = open(pathlib.Path(self.path, self.file), 'r')
+    path = Path(self.path, self.file)
+    if not Path.exists(path):
+      open(path, 'w').write(json.dumps(defaultConfigType))
+    file = open(path, 'r')
     self.json_data = { **defaultConfigType, **json.loads(file.read()) }
     self.data = SimpleNamespace(**self.json_data)
     pass

@@ -123,7 +123,7 @@ def get_table(t: TrackExtended):
     SEPARATING_LINE,
     ['Date', date if type(date) is str else date.year],
     ['Track', f'{track.trackNumber} / {track.trackCount}' if track.trackNumber != None and track.trackCount != None else '-'],
-    ['Disc', f'{track.discNumber} / {track.discCount}' if track.discNumber != None and track.dictCount != None else '-'],
+    ['Disc', f'{track.discNumber} / {track.discCount}' if track.discNumber != None and track.discCount != None else '-'],
     SEPARATING_LINE,
     ['Artwork', cl.change(t.get_artwork_url(), cl.options.URL) if t.get_artwork_url() else '-'],
     ['Lyrics', cl.change(t.get_lyrics_url(), cl.options.URL)],
