@@ -193,6 +193,18 @@ def track_download_only(ydl: YoutubeDL, *, id: str, url: str, config: Config):
 def search_menu(title: str | None = 'Search'):
   [artist, title] = Input(title, 'Artist: ', 'Title: ').start()
   return f'{artist} - {title}'
+def valid_url(url: str | None):
+  return bool(re.match(r'https?:\/\/(youtu\.be)|(youtube\.com)\/.*', url))
+def input_url(): 
+  clear()
+  url = pyperclip.paste()
+  print(cl.change(f'Clipboard URL: {url}' if valid_url(url) else 'No URL', cl.text.GREY))
+  url_input = input(f'YouTube URL{' (nothing for clipboard)' if valid_url(url) else ''}: ')
+  url = url_input if url_input != '' else url
+  if not valid_url(url):
+    return input_url()
+
+  return url
 def init():
   clear()
   id = List([
@@ -200,18 +212,19 @@ def init():
     {"id": "search", "name": "Search"}, 
     {"id": "download", "name": "Download"}, 
     {"id": "exit", "name": "Exit"}
-    ], ordered=False, show_info=False, title=cl.change('Myousic', cl.text.BLUE)).get_value()
-  print(id)
+    ], ordered=False, show_info=False, title=cl.change('  Myousic', cl.text.BLUE)).get_value()
   if id == 'download' or id == 'search-download':
-    url = pyperclip.paste()
-    if not re.match(r'https?:\/\/(youtu\.be)|(youtube\.com)\/.*', url):
-      url = input('Youtube URL: ')
+    url = input_url()
+    # if not re.match(r'https?:\/\/(youtu\.be)|(youtube\.com)\/.*', url):
+    #   url = input('Youtube URL: ')
     main(url=url, download_only= id == 'download')
   elif id == 'search':
     term = search_menu()
     main(search=term)
   elif id == 'exit':
     return
+  
+  init()
   
 if __name__ == "__main__":
   init()
