@@ -4,6 +4,7 @@ from datetime import datetime
 from tabulate import tabulate, SEPARATING_LINE
 from types import SimpleNamespace
 import urllib.parse, urllib.request
+from pathlib import Path
 import pyperclip
 import re
 import requests
@@ -26,7 +27,7 @@ def main(*, url: str | None = None, search: str | None = None, download_only: bo
     'outtmpl': f'{id}.%(ext)s',
     'quiet': 'true',
   }
-  config = Config()
+  config = Config(Path.home())
 
   with YoutubeDL(options) as ydl:
     if download_only and url:
@@ -199,7 +200,7 @@ def input_url():
   clear()
   url = pyperclip.paste()
   print(cl.change(f'Clipboard URL: {url}' if valid_url(url) else 'No URL', cl.text.GREY))
-  url_input = input(f'YouTube URL{' (nothing for clipboard)' if valid_url(url) else ''}: ')
+  url_input = input('YouTube URL' + ' (nothing for clipboard)' if valid_url(url) else '' + ':')
   url = url_input if url_input != '' else url
   if not valid_url(url):
     return input_url()
