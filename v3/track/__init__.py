@@ -2,18 +2,15 @@ from enum import Enum
 from types import SimpleNamespace
 from datetime import datetime
 import re
-import os
 from pathlib import Path
 import urllib.request, urllib.parse
 import music_tag
 from shutil import move, rmtree
 from utils.prompt import Input
 from utils.system import clear
-from utils.colors import Color
 from utils.config import Config, ReplacementProp
 from track.track_data import Genre, Lyrics
 
-cl = Color()
 class Explicitness(Enum):
   notExplicit = 'notExplicit'
   explicit = 'Explicit'
@@ -104,7 +101,6 @@ class TrackExtended:
       replacements=self.config.data.replace_genres
     )
 
-    self.get_dir()
   def get_missing(self, included: dict = {}, excluded_keys: list[str] = []):
     keys: dict[str, str] = {}
     for key in self.value_dict.keys():
@@ -137,7 +133,9 @@ class TrackExtended:
     self.value: Track = SimpleNamespace(**self.value_dict)
   def assign_file(self, audio_ext: str):
     self.set_ext(audio_ext)
-    move(self.get_file(), os.path.join(self.get_dir(), self.get_file()))
+    file = Path(self.get_file())
+    move(file, Path.joinpath(self.get_dir(), file))
+    
   def set_ext(self, ext: str):
     self.audio_ext = ext
 
@@ -145,8 +143,8 @@ class TrackExtended:
     user_regex = r'^\~\/'
     is_home = re.match(user_regex, self.output_folder) != None
     dir = Path.joinpath(Path.cwd(), self.temp_folder) if is_temporary else Path.joinpath(Path.home() if is_home else Path.cwd(), re.sub(user_regex, '', self.output_folder))
-    os.makedirs(str(dir), exist_ok=True)
-    return str(dir)
+    Path.mkdir(dir, exist_ok=True)
+    return dir
   def get_filename(self, is_temporary: bool = True):
     return self.audio_file_id if is_temporary else (self.value.artistName + ' - ' + self.value.trackName)
   def get_file(self, is_temporary: bool = True):
@@ -155,11 +153,11 @@ class TrackExtended:
     return f'{self.get_filename(is_temporary)}.{self.audio_ext}'
 
   def get_child_file(self, ext: str):
-    return os.path.join(self.get_dir(), f'{self.get_filename()}.{ext}')
+    return Path.joinpath(self.get_dir(), Path(f'{self.get_filename()}.{ext}'))
   def get_temp_audio_path(self):
-    return os.path.join(self.get_dir(True), self.get_file(True))
+    return Path.joinpath(self.get_dir(True), Path(self.get_file(True)))
   def get_output_audio_path(self):
-    return os.path.join(self.get_dir(False), self.get_file(False))
+    return Path.joinpath(self.get_dir(False), Path(self.get_file(False)))
 
   def save(self):
     move(self.get_temp_audio_path(), self.get_output_audio_path())
