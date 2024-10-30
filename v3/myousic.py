@@ -14,10 +14,7 @@ from utils import Exit
 from utils.prompt import List, Input, get_color, ColorType, print_color, print_formatted
 from utils.system import clear
 from utils.config import Config, SortType
-import utils.colors as colors
 
-
-cl = colors.Color()
 itunesApiUrl = 'https://itunes.apple.com/search'
 
 def youtube_dl():

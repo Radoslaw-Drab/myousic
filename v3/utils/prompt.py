@@ -12,11 +12,9 @@ from typing import Callable
 from utils import Exit
 from utils.config import SortType
 from utils.classes import Listener
-from utils.colors import Color
 from utils.number import clamp
 from utils.system import clear 
 
-cl = Color()
 
 class Input:
   def __init__(self, title: str | None = None, *prompts: list[str]):
@@ -112,7 +110,7 @@ class List:
       self.__bindings.add('tab')(lambda e: self.__change_sort_dir())
         
     self.__bindings.add('c-i')(lambda e: self.__toggle_show_info())
-    # self.__bindings.add('s-tab')(lambda e: self.__toggle_show_info())
+
   def __update_root(self, container: AnyContainer | Callable[[AnyContainer], AnyContainer]):
     if isinstance(container, AnyContainer):
       self.__root = container
