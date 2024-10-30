@@ -24,12 +24,12 @@ def youtube_dl():
     'outtmpl': f'{id}.%(ext)s',
     'quiet': 'true',
   }
-  return YoutubeDL(options)
+  return (YoutubeDL(options), id)
   
 def main(*, url: str | None = None, search: str | None = None, download_only: bool = False):
   clear()
   config = Config(Path.home())
-  ydl = youtube_dl()
+  (ydl, id) = youtube_dl()
   if download_only and url:
     try:
       track_download_only(ydl, id=id, url=url, config=config)
@@ -64,6 +64,10 @@ def main(*, url: str | None = None, search: str | None = None, download_only: bo
   q = urllib.parse.urlencode(query, doseq=True)
 
   response = requests.get(f'{itunesApiUrl}?{q}')
+  if not response.ok:
+    print_color(response.reason, ColorType.ERROR)
+    input()
+    return
   data: dict = response.json()
   error = data.get('errorMessage')
   if error:
@@ -176,7 +180,7 @@ def get_track(ydl: YoutubeDL, url: str | None, t: TrackExtended):
     clear()
     print_formatted(table)
     if download:
-      print_color('Downloaded', ColorType.SUCCESS)
+      print_color('\nDownloaded', ColorType.SUCCESS)
       t.save()
     return True
   except Exit:
@@ -215,7 +219,8 @@ def input_url():
     url = pyperclip.paste()
     title = 'No URL'
     if valid_url(url):
-      info = youtube_dl().extract_info(url, download=False)
+      (ydl, id) = youtube_dl()
+      info = ydl.extract_info(url, download=False)
       title = (info.get('track') or info.get('fulltitle')) + ' / ' + (info.get('artist') or info.get('uploader'))
     [url_input] = Input(get_color('Youtube info: ', ColorType.GREY) + get_color(title, ColorType.SECONDARY), 'YouTube URL' + (' (Enter for clipboard)' if valid_url(url) else '') + ': ').start()
     url = url_input if url_input != '' else url
