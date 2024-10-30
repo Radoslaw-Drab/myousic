@@ -5,7 +5,7 @@ from prompt_toolkit.layout import Layout, BufferControl, Window, HSplit, AnyCont
 from prompt_toolkit.layout.processors import Processor, Transformation, TransformationInput
 from prompt_toolkit import PromptSession, print_formatted_text
 from prompt_toolkit.formatted_text import HTML, to_formatted_text, fragment_list_to_text
-from prompt_toolkit.widgets import Label, HorizontalLine
+from prompt_toolkit.widgets import Label, HorizontalLine, Box
 from tabulate import tabulate
 from typing import Callable
 
@@ -24,14 +24,14 @@ class Input:
     
     self.__ps = PromptSession()
     pass
-  def start(self, clear_screen: bool = True):
+  def start(self, clear_screen: bool = True, padding_left: int = 2):
     if clear_screen:
       clear()
     if self.__title:
-      print_formatted_text(HTML(self.__title))
+      print_formatted(self.__title)
     try:
       for prompt in self.__prompts:
-        self.__values.append(self.__ps.prompt(HTML(prompt)))
+        self.__values.append(self.__ps.prompt(HTML(''.ljust(padding_left) + prompt)))
       return self.__values
     except KeyboardInterrupt:
       raise Exit
@@ -81,13 +81,13 @@ class List:
     self.__header = Label(self.title)
     self.__controls = Label('')
     self.__content = Window(content=BufferControl(buffer=self.__buffer, input_processors=[FormatText()]))
-    self.__update_root(HSplit([
-      self.__controls,
+    self.__update_root((HSplit([
+      Box(self.__controls, padding_left=2, padding=0),
       HorizontalLine(),
-      self.__header,
+      Box(self.__header, padding_left=2, padding=0),
       HorizontalLine(),
-      self.__content
-    ]))
+      Box(self.__content, padding_left=2, padding=0)
+    ])))
 
     self.__init_bindings()
     
@@ -185,8 +185,7 @@ class List:
       return None
     
     self.__get_controls()
-    info = self.__get_info()
-    self.__header.formatted_text_control.text = HTML(info)
+    self.__get_info()
     
     text = ''
     show_count_half = round(self.show_count / 2)
@@ -252,22 +251,24 @@ class List:
     table = tabulate(data, tablefmt='plain')
     self.__controls.formatted_text_control.text = HTML(table)
   def __get_info(self):
-    str = ''
+    text = ''
     if self.before_screen != None:
-      str += (self.before_screen) + '\n'
+      text += self.before_screen + '\n'
 
     if self.title != None:
       if self.prefix != None:
-        str += get_color(self.prefix, ColorType.SECONDARY) + ' '
-      str += (self.title)
+        text += get_color(self.prefix, ColorType.SECONDARY) + ' '
+      text += (self.title)
       
     if self.sort_types != None and len(self.sort_types) > 0:
-      str += '\nSort: '
+      text += '\nSort: '
       if self.sort_type_index != -1:
-        str += f'{self.sort_types[self.sort_type_index]} ({self.sort_dir.value.upper()})'
+        text += f'{self.sort_types[self.sort_type_index]} ({self.sort_dir.value.upper()})'
       else:
-        str += '- '
-    return str
+        text += '- '
+        
+    self.__header.formatted_text_control.text = HTML(text)
+
 
   def __change_sort(self, step: int = 1):
     self.sort_type_index += max(min(step, 1), -1)
@@ -290,8 +291,9 @@ class List:
 
 def get_color(text: str, type: ColorType, modify_type: str = 'fg'):
   return f'<style {modify_type}="{type}">{text}</style>'
-def print_formatted(text: str, sep: str = ' ', end: str = '\n'):
-  print_formatted_text(HTML(text), sep, end)
+def print_formatted(text: str, sep: str = ' ', end: str = '\n', padding_left: int = 2):
+  splitted_text = [''.ljust(padding_left) + line for line in text.split('\n')]
+  print_formatted_text(HTML('\n'.join(splitted_text)), sep=sep, end=end)
 def print_color(text: str, type: ColorType, modify_type: str = 'fg', sep: str = ' ', end: str = '\n'):
   print_formatted(get_color(text, type, modify_type), sep=sep, end=end)
 
