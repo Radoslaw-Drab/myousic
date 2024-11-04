@@ -6,7 +6,7 @@ from pathlib import Path
 import urllib.request, urllib.parse
 import music_tag
 from shutil import move, rmtree
-from utils.prompt import Input
+from utils.prompt import Input, get_color, ColorType, print_formatted, Confirm
 from utils.system import clear
 from utils.config import Config, ReplacementProp
 from track.track_data import Genre, Lyrics
@@ -82,9 +82,9 @@ default_track: Track = {
 }
 class TrackExtended:
   def __init__(self, track: dict, audio_file_id: str, config: Config | None = None):
-    default = default_track.copy()
+    default: Track = default_track.copy()
     default.update(**track)
-    self.value_dict = default
+    self.value_dict: dict = default
     self.update_track(default)
 
     self.temp_folder = config.data.temp_folder or 'tmp'
@@ -101,8 +101,36 @@ class TrackExtended:
       replacements=self.config.data.replace_genres
     )
 
-  def get_missing(self, included: dict = {}, excluded_keys: list[str] = []):
-    keys: dict[str, str] = {}
+  def get_table(self, print_table: bool = False):
+    from tabulate import SEPARATING_LINE, tabulate
+    track = self.value
+    data = [
+      ['Track', track.trackName],
+      ['Artist', track.artistName],
+      ['Album', track.collectionName if track.collectionName else '-'],
+      SEPARATING_LINE,
+      ['Genre', track.primaryGenreName if track.primaryGenreName else '-'],
+      ['Other Genres', self.get_genres_str()],
+      ['Explicitness', track.collectionExplicitness if track.collectionExplicitness else '-'],
+      SEPARATING_LINE,
+      ['Date', str(self.get_date())],
+      ['Track', f'{track.trackNumber} / {track.trackCount}' if track.trackNumber != None and track.trackCount != None else '-'],
+      ['Disc', f'{track.discNumber} / {track.discCount}' if track.discNumber != None and track.discCount != None else '-'],
+      SEPARATING_LINE,
+      ['Artwork', get_color(self.get_artwork_url(), ColorType.PRIMARY) if self.get_artwork_url() else '-'],
+      ['Lyrics', get_color(self.get_lyrics_url(), ColorType.PRIMARY)],
+      ['Genres', get_color(self.get_genres_url(), ColorType.PRIMARY)]
+    ]
+
+    table = tabulate(data, tablefmt='plain') + '\n'
+    if print_table:
+      clear()
+      print_formatted(table)
+      Confirm().start(False)
+    return table
+
+  def get_missing(self, included: dict[str, str | tuple[str, str]] = {}, excluded_keys: list[str] = []):
+    keys: dict[str, tuple[str, str | None]] = {}
     for key in self.value_dict.keys():
       if len(excluded_keys) > 0 and key in excluded_keys:
         continue
@@ -112,14 +140,16 @@ class TrackExtended:
       if self.value_dict[key] != None:
         continue
       
-      keys.update({
-        key: (included.get(key) if len(included.keys()) > 0 else key) + ': '
-      })
-    
+      new_dict: dict[tuple[str, str | None]] = {}
+      k = included.get(key) if len(included.keys()) > 0 else key
+      if type(k) is str:
+        new_dict[key] = (k + ': ', None)
+      if type(k) is tuple:
+        new_dict[key] = (k[0] + ': ', k[1])
+      
+      keys.update(new_dict)
     values = Input('Values', *keys.values()).start()
     for key_index in range(len(keys.keys())):
-      if values[key_index] == '':
-        continue
       key = [*keys.keys()][key_index]
       self.update_track({
         key: values[key_index]
@@ -166,10 +196,11 @@ class TrackExtended:
     self.__is_saved = True
 
   def get_date(self):
-    if self.value.releaseDate == None:
-      return datetime.now()
+    date = self.value.releaseDate
+    if date == None:
+      return datetime.now().year
     date_regex = r'\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z'
-    return datetime.strptime(self.value.releaseDate, "%Y-%m-%dT%H:%M:%SZ") if re.match(date_regex, self.value.releaseDate) else self.value.releaseDate
+    return datetime.strptime(date, "%Y-%m-%dT%H:%M:%SZ").year if re.match(date_regex, date) else date if date != '' else datetime.now().year
   def get_artwork_url(self, size: int = 1000):
     return re.sub('100x100', f'{max(size, 100)}x{max(size, 100)}', self.value.artworkUrl100) if self.value.artworkUrl100 else None
   def get_lyrics_url(self):
@@ -208,7 +239,9 @@ class TrackExtended:
         with open(artwork_image_filename, 'wb') as f:
           f.write(url.read())
     artworkImage = open(artwork_image_filename, 'rb') if artwork_url else None
-
+    date = str(self.get_date())
+    
+    
     audio = music_tag.load_file(self.get_temp_audio_path())
     audio['title'] = self.value.trackName
     audio['artist'] = self.value.artistName
@@ -220,7 +253,7 @@ class TrackExtended:
     audio['total-tracks'] = self.value.trackCount or 1
     audio['disc-number'] = self.value.discNumber or 1
     audio['total-discs'] = self.value.discCount or 1
-    audio['year'] = self.get_date() if type(self.get_date()) is str else self.get_date().year 
+    audio['year'] = date 
     if artworkImage:
       audio['artwork'] = artworkImage.read()
 

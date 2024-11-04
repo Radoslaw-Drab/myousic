@@ -17,21 +17,40 @@ from utils.system import clear
 
 
 class Input:
-  def __init__(self, title: str | None = None, *prompts: list[str]):
-    self.__prompts = prompts
+  def __init__(self, title: str | None = None, *prompts: list[str | tuple[str, str]]):
+    self.__prompts: list[str | tuple[str, str]] = prompts
     self.__values: list[str] = []
     self.__title = title
     
     self.__ps = PromptSession()
     pass
-  def start(self, clear_screen: bool = True, padding_left: int = 2):
+  def start(self, clear_screen: bool = True, padding_left: int = 2, show_info: bool = True):
     if clear_screen:
       clear()
+    if show_info:
+      table = tabulate(
+        [[get_color('CTRL + C', ColorType.GREY), get_color('Exit', ColorType.GREY)]],
+        tablefmt='plain'
+      )
+      print_formatted(table)
     if self.__title:
       print_formatted(self.__title)
     try:
       for prompt in self.__prompts:
-        self.__values.append(self.__ps.prompt(HTML(''.ljust(padding_left) + prompt)))
+        padding = ''.ljust(padding_left)
+        value = padding
+        placeholder = None
+        if type(prompt) == str:
+          value += prompt
+        elif type(prompt) == tuple:
+          value += prompt[0]
+          placeholder = prompt[1]
+          
+        value = self.__ps.prompt(HTML(value), placeholder=HTML(placeholder) if placeholder else '') or placeholder or ''
+        if value == None:
+          continue
+        
+        self.__values.append(remove_color(value))
       return self.__values
     except KeyboardInterrupt:
       raise Exit
@@ -109,7 +128,7 @@ class List:
       self.__bindings.add('pagedown')(lambda e: self.__change_sort(-1))
       self.__bindings.add('tab')(lambda e: self.__change_sort_dir())
         
-    self.__bindings.add('c-i')(lambda e: self.__toggle_show_info())
+    self.__bindings.add('s-tab')(lambda e: self.__toggle_show_info())
 
   def __update_root(self, container: AnyContainer | Callable[[AnyContainer], AnyContainer]):
     if isinstance(container, AnyContainer):
@@ -167,6 +186,7 @@ class List:
     self.__show()
   def __set_ended(self, value: bool):
     self.__ended = value
+  
   def get_index(self):
     try:
       self.__show()
@@ -233,10 +253,11 @@ class List:
     def get(text: str):
       return get_color(text, ColorType.GREY)
     data: list[list[str]] = []
-    data.append([get('CTRL + I'), get('Show controls')])
+    data.append([get('Shift + Tab'), get(f'{'Hide' if self.__show_info else 'Show'} controls')])
     
     if self.__show_info:
       data.append([get('Left/Right Arrows' if self.horizontal else 'Up/Down Arrows'), get('Move left/right' if self.horizontal else 'Move up/down')])
+      data.append([get('Enter'), get('Confirm')])
       data.append([get('CTRL + C'), get('Exit')])
     
       if self.sort_types != None and len(self.sort_types) > 0:
@@ -244,7 +265,7 @@ class List:
         data.append([get('TAB'), get('Change direction')])
       
       if self.multiple:
-        data.append([get('SPACE'), get('Select')])
+        data.append([get('Space'), get('Select')])
         data.append([get('CTRL + A'), get('Select all')])
     
     
@@ -289,6 +310,10 @@ class List:
   def set_sort_listener(self, listener: ListSortFunction | None):
     self.__sort_listener.set(listener)
 
+def remove_color(text: str):
+  import re
+  match = re.search(r'(?<=\>).*(?=<\/style>)', text)
+  return match.group() if match else text
 def get_color(text: str, type: ColorType, modify_type: str = 'fg'):
   return f'<style {modify_type}="{type}">{text}</style>'
 def print_formatted(text: str, sep: str = ' ', end: str = '\n', padding_left: int = 2):
@@ -301,3 +326,17 @@ class FormatText(Processor):
     def apply_transformation(self, ti: TransformationInput):
         fragments = to_formatted_text(HTML(fragment_list_to_text(ti.fragments)))
         return Transformation(fragments)
+
+class Confirm:
+  def __init__(self, title: str = f'Press {get_color('Enter', ColorType.SECONDARY)} to continue.'):
+    self.__title = title
+    
+    self.__ps = PromptSession()
+    
+  def start(self, clear_screen: bool = True, padding_left: int = 2):
+    if clear_screen:
+      clear()
+    try:
+        self.__ps.prompt(HTML(''.ljust(padding_left) + self.__title))
+    except KeyboardInterrupt:
+      raise Exit 

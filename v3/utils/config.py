@@ -1,8 +1,8 @@
+import json
+import re
 from types import SimpleNamespace
 from pathlib import Path
 from enum import Enum
-import json
-import re
 
 class PrintConfig:
   print_max_artist_size: int
@@ -62,6 +62,8 @@ defaultConfigType: ConfigType = {
   "sort_type": "asc",
   "show_count": 10
 }
+
+
   
 class Config:
   path: str = './'
@@ -76,7 +78,7 @@ class Config:
     file = open(path, 'r')
     self.json_data = { **defaultConfigType, **json.loads(file.read()) }
     self.data = SimpleNamespace(**self.json_data)
-    pass
+    self.__keys = {}
   
   def modify_genres(self, prop: ReplacementProp, text: str):
     return self.__modify_by_regex(ReplacementType.GENRES, prop, text)
@@ -108,3 +110,28 @@ class Config:
     elif sort == 'album':
       return 'collectionName'
     return None
+  def set_key(self, key: str, value: any):
+    d = {}
+    d[key] = value
+    self.__keys.update(d)
+    self.keys: Keys = SimpleNamespace(**self.__keys)
+    
+  def youtube_dl(self):
+    id = self.keys.id
+    if id == None:
+      raise ValueError('No ID set')
+    
+    from yt_dlp import YoutubeDL
+    options = {
+      'format': 'm4a/bestaudio/best', 
+      'outtmpl': f'{id}.%(ext)s',
+      'quiet': 'true',
+    }
+    return YoutubeDL(options)
+  
+  
+  
+class Keys(dict):
+  from uuid import UUID
+  id: UUID | None
+  itunes_api_url: str | None
