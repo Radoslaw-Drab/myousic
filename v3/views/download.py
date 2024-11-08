@@ -18,9 +18,9 @@ def init(config: Config, url: str):
   before_screen = table
 
   if not valid_lyrics:
-    before_screen += f'\n{get_color('Couldn\'t find lyrics', ColorType.ERROR)}'
+    before_screen += '\n' + get_color('Couldn\'t find lyrics', ColorType.ERROR)
   if not valid_genres:
-    before_screen += f'\n{get_color('Couldn\'t find genres', ColorType.ERROR)}'
+    before_screen += '\n' + get_color('Couldn\'t find genres', ColorType.ERROR)
   
   clear()
   try:

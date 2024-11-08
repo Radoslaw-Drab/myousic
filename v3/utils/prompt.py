@@ -237,7 +237,7 @@ class List:
       has_items_from_end = index < items[0]
       is_last = index == items[len(items) - 1]
       if print_line:
-        text += get_color(f'{(''.ljust(longestItemSize + len(prefix), '-'))}', ColorType.GREY) + '\n'
+        text += get_color(''.ljust(longestItemSize + len(prefix), '-'), ColorType.GREY) + '\n'
 
       if is_current_index:
         text += get_color(term, ColorType.PRIMARY)
@@ -253,7 +253,7 @@ class List:
     def get(text: str):
       return get_color(text, ColorType.GREY)
     data: list[list[str]] = []
-    data.append([get('Shift + Tab'), get(f'{'Hide' if self.__show_info else 'Show'} controls')])
+    data.append([get('Shift + Tab'), get(f'{"Hide" if self.__show_info else "Show"} controls')])
     
     if self.__show_info:
       data.append([get('Left/Right Arrows' if self.horizontal else 'Up/Down Arrows'), get('Move left/right' if self.horizontal else 'Move up/down')])
@@ -328,7 +328,7 @@ class FormatText(Processor):
         return Transformation(fragments)
 
 class Confirm:
-  def __init__(self, title: str = f'Press {get_color('Enter', ColorType.SECONDARY)} to continue.'):
+  def __init__(self, title: str = f'Press {get_color("Enter", ColorType.SECONDARY)} to continue.'):
     self.__title = title
     
     self.__ps = PromptSession()
