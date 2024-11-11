@@ -44,8 +44,8 @@ defaultConfigType: ConfigType = {
   "print_max_artist_size": 35,
   "print_max_track_size": 40,
   "print_max_album_size": 25,
-  "temp_folder": 'tmp',
-  "output_folder": "music",
+  "temp_folder": str(Path.joinpath(Path.home(), 'tmp')),
+  "output_folder": str(Path.joinpath(Path.home(), "music")),
   "artwork_size": 1000,
   "excluded_genres": [],
   "included_genres": [],
@@ -118,6 +118,9 @@ class Config:
     
   def youtube_dl(self):
     id = self.keys.id
+    temp_folder = self.keys.temp_folder
+    
+
     if id == None:
       raise ValueError('No ID set')
     
@@ -126,6 +129,11 @@ class Config:
       'format': 'm4a/bestaudio/best', 
       'outtmpl': f'{id}.%(ext)s',
       'quiet': 'true',
+      'progress': 'true',
+      'paths': { 
+        "temp": temp_folder or './', 
+        "home": temp_folder or './'
+      }
     }
     return YoutubeDL(options)
   
@@ -135,3 +143,5 @@ class Keys(dict):
   from uuid import UUID
   id: UUID | None
   itunes_api_url: str | None
+  temp_folder: str | None
+  output_folder: str | None

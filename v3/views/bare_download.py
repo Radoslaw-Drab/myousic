@@ -32,10 +32,9 @@ def init(config: Config, url: str):
     })
     ydl.download(url)
     
-    track.assign_file(info.get('audio_ext'))
+    track.set_ext(info.get('audio_ext'))
     track.metadata()
 
-    # print(get_table(track))
     track.get_table(True)
     track.save()
   except Exit:

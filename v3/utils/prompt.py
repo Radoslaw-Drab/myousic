@@ -8,6 +8,7 @@ from prompt_toolkit.formatted_text import HTML, to_formatted_text, fragment_list
 from prompt_toolkit.widgets import Label, HorizontalLine, Box
 from tabulate import tabulate
 from typing import Callable
+import re
 
 from utils import Exit
 from utils.config import SortType
@@ -65,6 +66,16 @@ class ColorType():
   ERROR = '#ff0000'
   WARNING = '#ffff00'
   SUCCESS = '#00ff00'
+
+xml_replacements: dict[str, str] = {
+  "&": "&amp;"
+}
+def xml_format(text: str):
+  new_text = text
+  for key in xml_replacements.keys():
+    new_text = re.sub(key, xml_replacements[key], new_text)
+  return new_text
+
 class ListSortFunction(Callable[[str, SortType], list[ListItem | str]]):
   pass
 class List:
@@ -239,7 +250,7 @@ class List:
       is_last = index == items[len(items) - 1]
       if print_line:
         text += get_color(''.ljust(longestItemSize + len(prefix), '-'), ColorType.GREY) + '\n'
-
+      term = xml_format(term)
       if is_current_index:
         text += get_color(term, self.__selection_color)
       else:
@@ -274,22 +285,25 @@ class List:
     self.__controls.formatted_text_control.text = HTML(table)
   def __get_info(self):
     text = ''
-    if self.before_screen != None:
-      text += self.before_screen + '\n'
+    try:
+      if self.before_screen != None:
+        text += self.before_screen + '\n'
 
-    if self.title != None:
-      if self.prefix != None:
-        text += get_color(self.prefix, ColorType.SECONDARY) + ' '
-      text += (self.title)
-      
-    if self.sort_types != None and len(self.sort_types) > 0:
-      text += '\nSort: '
-      if self.sort_type_index != -1:
-        text += f'{self.sort_types[self.sort_type_index]} ({self.sort_dir.value.upper()})'
-      else:
-        text += '- '
+      if self.title != None:
+        if self.prefix != None:
+          text += get_color(self.prefix, ColorType.SECONDARY) + ' '
+        text += (self.title)
         
-    self.__header.formatted_text_control.text = HTML(text)
+      if self.sort_types != None and len(self.sort_types) > 0:
+        text += '\nSort: '
+        if self.sort_type_index != -1:
+          text += f'{self.sort_types[self.sort_type_index]} ({self.sort_dir.value.upper()})'
+        else:
+          text += '- '
+    
+      self.__header.formatted_text_control.text = HTML(xml_format(text))
+    except Exception as error:
+      self.__header.formatted_text_control.text = get_color(str(error), ColorType.ERROR) + '\n\n' + text
 
 
   def __change_sort(self, step: int = 1):
@@ -312,21 +326,27 @@ class List:
     self.__sort_listener.set(listener)
 
 def remove_color(text: str):
-  import re
   match = re.search(r'(?<=\>).*(?=<\/style>)', text)
-  return match.group() if match else text
-def get_color(text: str, type: ColorType, modify_type: str = 'fg'):
+  inside_styles = re.sub(r'<\/.*>', '', match.group()) if match else None
+  return inside_styles if inside_styles else text
+def get_color(text: str, type: ColorType | str, modify_type: str = 'fg'):
   return f'<style {modify_type}="{type}">{text}</style>'
 def print_formatted(text: str, sep: str = ' ', end: str = '\n', padding_left: int = 2):
   splitted_text = [''.ljust(padding_left) + line for line in text.split('\n')]
-  print_formatted_text(HTML('\n'.join(splitted_text)), sep=sep, end=end)
+  try:
+    print_formatted_text(HTML(xml_format('\n'.join(splitted_text))), sep=sep, end=end)
+  except:
+    print('\n'.join(splitted_text), sep=sep, end=end)
 def print_color(text: str, type: ColorType, modify_type: str = 'fg', sep: str = ' ', end: str = '\n'):
   print_formatted(get_color(text, type, modify_type), sep=sep, end=end)
 
 class FormatText(Processor):
     def apply_transformation(self, ti: TransformationInput):
-        fragments = to_formatted_text(HTML(fragment_list_to_text(ti.fragments)))
-        return Transformation(fragments)
+        try:
+          fragments = to_formatted_text(HTML(fragment_list_to_text(ti.fragments)))
+          return Transformation(fragments)
+        except Exception as error:
+          return Transformation(ti.fragments)
 
 class Confirm:
   def __init__(self, title: str = f'Press {get_color("Enter", ColorType.SECONDARY)} to continue.'):
