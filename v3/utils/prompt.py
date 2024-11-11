@@ -59,8 +59,8 @@ class ListItem(dict):
   id: str
   name: str | None = None
 class ColorType():
-  PRIMARY = '#0000ff'
-  SECONDARY = '#ff5500'
+  PRIMARY = '#ff5500'
+  SECONDARY = '#0055ff'
   GREY = '#555555'
   ERROR = '#ff0000'
   WARNING = '#ffff00'
@@ -68,7 +68,7 @@ class ColorType():
 class ListSortFunction(Callable[[str, SortType], list[ListItem | str]]):
   pass
 class List:
-  def __init__(self, items: list[ListItem | str | None], title: str | None = None, loop: bool = True, ordered: bool = True, multiple: bool = False, prefix: str | None = None, selector: str = '>', show_count: int = 10, before_screen: str | None = None, horizontal: bool = False, sort_types: list[str] | None = None, sort_listener: ListSortFunction | None = None, show_info: bool = False):
+  def __init__(self, items: list[ListItem | str | None], title: str | None = None, loop: bool = True, ordered: bool = True, multiple: bool = False, prefix: str | None = None, selector: str = '>', show_count: int = 10, before_screen: str | None = None, horizontal: bool = False, sort_types: list[str] | None = None, sort_listener: ListSortFunction | None = None, show_info: bool = False, selection_color: str = ColorType.SECONDARY):
     self.items: list[ListItem] = self.__set_items(items)
     self.__default_items = items
     self.selected = []
@@ -87,6 +87,7 @@ class List:
     self.sort_type_index: int = -1
     self.sort_dir: SortType = SortType.ASC
     self.__show_info: bool = show_info
+    self.__selection_color = selection_color
     self.__set_ended(False)
     
     self.__bindings = KeyBindings()
@@ -240,7 +241,7 @@ class List:
         text += get_color(''.ljust(longestItemSize + len(prefix), '-'), ColorType.GREY) + '\n'
 
       if is_current_index:
-        text += get_color(term, ColorType.PRIMARY)
+        text += get_color(term, self.__selection_color)
       else:
         text += term
       text += end

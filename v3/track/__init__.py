@@ -105,8 +105,8 @@ class TrackExtended:
     from tabulate import SEPARATING_LINE, tabulate
     track = self.value
     data = [
-      ['Track', track.trackName],
-      ['Artist', track.artistName],
+      ['Track', get_color(track.trackName, ColorType.PRIMARY)],
+      ['Artist', get_color(track.artistName, ColorType.PRIMARY)],
       ['Album', track.collectionName if track.collectionName else '-'],
       SEPARATING_LINE,
       ['Genre', track.primaryGenreName if track.primaryGenreName else '-'],
@@ -117,9 +117,9 @@ class TrackExtended:
       ['Track', f'{track.trackNumber} / {track.trackCount}' if track.trackNumber != None and track.trackCount != None else '-'],
       ['Disc', f'{track.discNumber} / {track.discCount}' if track.discNumber != None and track.discCount != None else '-'],
       SEPARATING_LINE,
-      ['Artwork', get_color(self.get_artwork_url(), ColorType.PRIMARY) if self.get_artwork_url() else '-'],
-      ['Lyrics', get_color(self.get_lyrics_url(), ColorType.PRIMARY)],
-      ['Genres', get_color(self.get_genres_url(), ColorType.PRIMARY)]
+      ['Artwork', get_color(self.get_artwork_url(), ColorType.SECONDARY) if self.get_artwork_url() else '-'],
+      ['Lyrics', get_color(self.get_lyrics_url(), ColorType.SECONDARY)],
+      ['Genres', get_color(self.get_genres_url(), ColorType.SECONDARY)]
     ]
 
     table = tabulate(data, tablefmt='plain') + '\n'
