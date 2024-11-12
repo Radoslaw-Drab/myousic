@@ -47,33 +47,19 @@ def init(search: str | None, *, config: Config) -> TrackExtended | None:
     except Exit:
       return None
 
-  def max_size(prop: str):
-    return max(0, *[len(result.get(prop) or '') for result in results]) if len(results) > 0 else 0
   def get_date(date: str):
     return datetime.strptime(date, "%Y-%m-%dT%H:%M:%SZ")
-  def get_result(dictionary: dict, prop: str, max_size: int):
-    return (dictionary.get(prop)[:max_size] if dictionary.get(prop) != None else '-').ljust(max_size)
   
-  maxArtistName = max_size('artistName')
-  maxTrackName = max_size('trackName')
-  maxCollectionName = max_size('collectionName')
-  # maxArtistName = min(max_size('artistName'), config.data.print_max_artist_size)
-  # maxTrackName = min(max_size('trackName'), config.data.print_max_track_size)
-  # maxCollectionName = min(max_size('collectionName'), config.data.print_max_album_size)
-
   def sort_results(sort_by: str | None, sort_type: SortType = SortType.ASC):
     from tabulate import tabulate
-    options: list[str] = []
+    ids: list[int] = []
     data: list[dict] = []
     sorted_results = sorted(results, key=lambda d: d[config.get_sort_key(sort_by)], reverse=sort_type == SortType.DESC) if sort_by != None else results
 
     for index in range(len(sorted_results)):
       r = sorted_results[index]
-      artistName = get_result(r, 'artistName', maxArtistName)
-      trackName = get_result(r, 'trackName', maxTrackName)
-      collectionName = get_result(r, 'collectionName', maxCollectionName)
       year = get_date(r.get('releaseDate')).year if r.get('releaseDate') != None else '-'
-      options.append(f'{trackName} | {artistName} | {collectionName} | {year}')
+      ids.append(sorted_results[index].get('trackId'))
       data.append({
         'index': index + 1,
         'artistName': r.get('artistName'),
@@ -82,7 +68,8 @@ def init(search: str | None, *, config: Config) -> TrackExtended | None:
         'year': year
       })
     table = tabulate([[value for value in d.values()] for d in data], tablefmt='presto')
-    return table.split('\n')
+    lines = table.split('\n')
+    return [{"id": ids[index], "name": lines[index]} for index in range(len(lines))]
 
   title = f"Select for {get_color(search, ColorType.PRIMARY)}"
   options = sort_results(None, SortType.ASC)
@@ -95,9 +82,16 @@ def init(search: str | None, *, config: Config) -> TrackExtended | None:
       sort_listener=sort_results, 
       show_count=config.data.show_count,   
       list_prefix=False          
-    ).get_index() if len(options) > 1 else 0
+    ).get_value() if len(options) > 1 else 0
     
     if index == None: return
-    return TrackExtended(results[index], id, config=config)
+    result = {}
+    
+    for data in results:
+      if data.get('trackId') != index:
+        continue
+      result = data
+      
+    return TrackExtended(result, id, config=config)
   except Exit:
     return
