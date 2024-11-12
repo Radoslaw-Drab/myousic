@@ -4,10 +4,6 @@ from types import SimpleNamespace
 from pathlib import Path
 from enum import Enum
 
-class PrintConfig:
-  print_max_artist_size: int
-  print_max_track_size: int
-  print_max_album_size: int
 class Replacement(dict):
   title: dict[str, str]
   artist: dict[str, str]
@@ -21,7 +17,7 @@ class ReplacementType(Enum):
 class SortType(Enum):
   ASC = 'asc'
   DESC = 'desc'
-class ConfigType(PrintConfig):
+class ConfigType():
   class Sort(Enum):
     ARTIST = 'artist'
     TITLE = 'title'
@@ -31,25 +27,22 @@ class ConfigType(PrintConfig):
   temp_folder: str
   output_folder: str
   artwork_size: int
-  sort: Sort
-  sort_type: SortType
   excluded_genres: list[str]
   included_genres: list[str]
   replace_genres: dict[str, str]
+  replace_lyrics: dict[str, str]
   lyrics_regex: Replacement
   genres_regex: Replacement
   show_count: int
 
-defaultConfigType: ConfigType = {
-  "print_max_artist_size": 35,
-  "print_max_track_size": 40,
-  "print_max_album_size": 25,
+default_config_type: ConfigType = {
   "temp_folder": str(Path.joinpath(Path.home(), 'tmp')),
   "output_folder": str(Path.joinpath(Path.home(), "music")),
   "artwork_size": 1000,
   "excluded_genres": [],
   "included_genres": [],
   "replace_genres": {},
+  "replace_lyrics": {},
   "lyrics_regex": {
     "artist": {},
     "title": {}
@@ -58,32 +51,41 @@ defaultConfigType: ConfigType = {
     "artist": {},
     "title": {}
   },
-  "sort": None,
-  "sort_type": "asc",
   "show_count": 10
 }
 
 
   
 class Config:
-  path: str = './'
   file: str = 'config.json'
-  data: ConfigType
-  json_data: dict[str, any]
   def __init__(self, path: str = './'):
-    self.path = path
-    path = Path(self.path, self.file)
-    if not Path.exists(path):
-      open(path, 'w').write(json.dumps(defaultConfigType))
-    file = open(path, 'r')
-    self.json_data = { **defaultConfigType, **json.loads(file.read()) }
-    self.data = SimpleNamespace(**self.json_data)
+    self.path = Path(path, self.file)
+    self.get_data()
     self.__keys = {}
+    self.default_config_type: dict = default_config_type
   
   def modify_genres(self, prop: ReplacementProp, text: str):
     return self.__modify_by_regex(ReplacementType.GENRES, prop, text)
   def modify_lyrics(self, prop: ReplacementProp, text: str):
     return self.__modify_by_regex(ReplacementType.LYRICS, prop, text)
+  def get_data(self):
+    self.data: ConfigType = SimpleNamespace(**self.get_data_json())
+    return self.data
+  def set_data(self, key: str, value: any):
+    d = self.get_data_json()
+    obj = {}
+    obj[key] = value
+    open(self.path, 'w').write(json.dumps({ **d, **obj }))
+    self.get_data()
+    
+  def get_data_json(self):
+    if not Path.exists(self.path):
+      open(self.path, 'w').write(json.dumps(default_config_type))
+    file = open(self.path, 'r')
+    self.json_data = { **default_config_type, **json.loads(file.read()) }
+    # print(self.json_data)
+    # input()
+    return self.json_data
   def __modify_by_regex(self, type: ReplacementType, prop: ReplacementProp, text: str):
     newText = text
     replacement: Replacement = self.json_data.get(type.value)
@@ -100,14 +102,13 @@ class Config:
 
     return newText
   def get_sort_key(self, key: str | None = None):
-    sort = self.data.sort if key == None else key
-    if sort == 'title':
+    if key == 'title':
       return 'trackName'
-    elif sort == 'artist':
+    elif key == 'artist':
       return 'artistName'
-    elif sort == 'year':
+    elif key == 'year':
       return 'releaseDate'
-    elif sort == 'album':
+    elif key == 'album':
       return 'collectionName'
     return None
   def set_key(self, key: str, value: any):

@@ -1,27 +1,12 @@
 {
-	"print_max_artist_size": 35,
-	"print_max_track_size": 40,
-	"print_max_album_size": 25,
-	"temp_folder": "tmp",
-	"output_folder": "music",
-	"artwork_size": 1000,
-	"sort_type": "asc",
-	"show_count": 10,
-	"replace_genres": {
-		"(?!Alternative)Alt": "Alternative"
-	},
-	"excluded_genres": [],
-	"included_genres": ["Rock$", "Alternative", "Metal$", "Pop", "Electronic", "Acoustic"],
-	"lyrics_regex": {
-		"artist": {
-			"& ": ""
-		}
-	},
-	"genres_regex": {
-		"artist": {
-			" *&.*": "",
-			"Caskets": "caskets/_/",
-			"fade": "fade/_/"
-		}
-	}
+  "temp_folder": "tmp",
+  "output_folder": "music",
+  "artwork_size": 1000,
+  "excluded_genres": ["test", "more", "less", "hehe", "see", "efqadas", "wdsa"],
+  "included_genres": ["Rock$", "Alternative", "Metal$", "Pop", "Electronic", "Acoustic"],
+  "replace_genres": { "(?!Alternative)Alt": "Alternative" },
+  "replace_lyrics": {},
+  "lyrics_regex": { "artist": { "& ": "" } },
+  "genres_regex": { "artist": { " *&.*": "", "Caskets": "caskets/_/", "fade": "fade/_/" } },
+  "show_count": 10
 }

@@ -210,6 +210,12 @@ class TrackExtended:
   def get_lyrics(self) -> tuple[str | None, str]:
     lyricsFile = self.get_child_file('txt')
     (lyrics, url) = self.Lyrics.get_to_file(lyricsFile, self.config.modify_lyrics(ReplacementProp.ARTIST, self.value.artistName), self.config.modify_lyrics(ReplacementProp.TITLE, self.value.trackName))
+    if lyrics != None:
+      l = lyrics
+      replacement = self.config.data.replace_lyrics
+      for key in [*replacement.keys()]:
+        l = re.sub(key, replacement[key], l)
+      lyrics = l
     return (lyrics, url)
   def check_lyrics(self):
     import requests
