@@ -107,7 +107,7 @@ class List:
       default_index: int = 0
       ):
     self.items: list[ListItem] = self.__set_items(items)
-    self.__default_items = items
+    self.__default_items = self.__set_items(items)
     self.selected = []
     self.__current_index: int = len(self.items) + default_index if default_index < 0 else default_index 
 
@@ -134,7 +134,7 @@ class List:
     
     self.__bindings = KeyBindings()
 
-    self.__sort_listener = Listener() 
+    self.__sort_listener = Listener[ListSortFunction]() 
     
     if sort_listener:
       self.__sort_listener.set(sort_listener)
@@ -167,13 +167,13 @@ class List:
       self.__bindings.add('c-a')(lambda e: self.select_all_toggle())
     
     if self.sort_types != None and len(self.sort_types) > 0:
-      self.__bindings.add('pageup')(lambda e: self.__change_sort())
-      self.__bindings.add('pagedown')(lambda e: self.__change_sort(-1))
-      self.__bindings.add('tab')(lambda e: self.__change_sort_dir())
+      self.__bindings.add('s-up')(lambda e: self.__change_sort())
+      self.__bindings.add('s-down')(lambda e: self.__change_sort(-1))
+      self.__bindings.add('s-tab')(lambda e: self.__change_sort_dir())
     if len(self.actions) > 1:
       self.__bindings.add('s-left')(lambda e: self.__set_action(-1))
       self.__bindings.add('s-right')(lambda e: self.__set_action())
-    self.__bindings.add('s-tab')(lambda e: self.__toggle_show_info())
+    self.__bindings.add('tab')(lambda e: self.__toggle_show_info())
     
     if len(self.custom_bindings.keys()) > 0:
       for key in self.custom_bindings:
@@ -212,11 +212,15 @@ class List:
 
     new_items: list[ListItem] = [] if replace else self.items
 
-    for item in items:
+    for index in range(len(items)):
+      item = items[index]
+      d = {  }
       if type(item) is str:
-        new_items.append({"id": item})
+        d['id'] = item
       elif type(item) is dict:
-        new_items.append(item)
+        d = { **item }
+      if d.get('id') != None:
+        new_items.append(d)
     self.items = new_items
     
     return new_items
@@ -337,7 +341,7 @@ class List:
     def get(text: str):
       return get_color(text, ColorType.GREY)
     data: list[list[str]] = []
-    data.append([get('Shift + Tab'), get(f'{"Hide" if self.__show_info else "Show"} controls')])
+    data.append([get('Tab'), get(f'{"Hide" if self.__show_info else "Show"} controls')])
     
     if self.__show_info:
       data.append([get('Left/Right arrows' if self.horizontal else 'Up/Down arrows'), get('Move left/right' if self.horizontal else 'Move up/down')])
@@ -345,8 +349,8 @@ class List:
       data.append([get('CTRL + C'), get('Exit')])
     
       if self.sort_types != None and len(self.sort_types) > 0:
-        data.append([get('Page Up/Down'), get('Change type')])
-        data.append([get('TAB'), get('Change direction')])
+        data.append([get('Shift + Up/Down arrows'), get('Change type')])
+        data.append([get('Shift + Tab'), get('Change direction')])
       
       if self.multiple:
         data.append([get('Space'), get('Select')])
@@ -381,7 +385,7 @@ class List:
         text += '\nAction: '
         text += ' | '.join(
           [
-            get_color(self.actions[action_index][1], ColorType.PRIMARY) 
+            get_color(self.actions[action_index][1], ColorType.SECONDARY) 
               if action_index == self.__current_action_index else 
             self.actions[action_index][1] 
             for action_index in range(len(self.actions))
