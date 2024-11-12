@@ -1,5 +1,6 @@
-import pyperclip
 import re
+from prompt_toolkit.clipboard.pyperclip import PyperclipClipboard
+
 
 from utils import Exit
 from utils.config import Config
@@ -35,11 +36,11 @@ def get_info_term(config: Config, url: str):
   (artist, title) = get_artist_track(config, url)
   return f'{artist} - {title}'
 def valid_url(url: str | None):
-  return bool(re.match(r'https?:\/\/(youtu\.be)|(youtube\.com)\/.*', url))
+  return bool(re.match(r'https?:\/\/(youtu\.be)|(youtube\.com)\/.*', url or ''))
 def input_url(config: Config) -> str | None: 
   try:
     clear()
-    url = pyperclip.paste()
+    url = PyperclipClipboard().get_data().text
     title = 'No URL'
     url_valid = valid_url(url)
     if url_valid:
@@ -48,7 +49,7 @@ def input_url(config: Config) -> str | None:
     
     [url_input] = Input(
       get_color('Youtube info: ', ColorType.GREY) + get_color(title, ColorType.PRIMARY), 
-      ('YouTube URL' + (f' ({get_color('Enter', ColorType.SECONDARY)} for default)' if url_valid else '') + ': ', get_color(url, ColorType.GREY) if url_valid else '')
+      ('YouTube URL' + (f" ({get_color('Enter', ColorType.SECONDARY)} for default)" if url_valid else '') + ': ', get_color(url, ColorType.GREY) if url_valid else '')
     ).start()
     
     url = url_input if url_input != '' else url

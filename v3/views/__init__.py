@@ -16,6 +16,9 @@ def init():
   config = Config(Path.home())
   config.set_key('id', uuid4())
   config.set_key('itunes_api_url', 'https://itunes.apple.com/search')
+  config.set_key('temp_folder', config.data.temp_folder)
+  config.set_key('output_folder', config.data.output_folder)
+  
   try:
     id = List([
       {"id": "search-download", "name": "Search and Download"}, 

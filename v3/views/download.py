@@ -1,4 +1,5 @@
 from types import SimpleNamespace
+from yt_dlp.utils import DownloadError
 
 from views.search import init as search
 from utils import Exit
@@ -18,9 +19,9 @@ def init(config: Config, url: str):
   before_screen = table
 
   if not valid_lyrics:
-    before_screen += f'\n{get_color('Couldn\'t find lyrics', ColorType.ERROR)}'
+    before_screen += '\n' + get_color('Couldn\'t find lyrics', ColorType.ERROR)
   if not valid_genres:
-    before_screen += f'\n{get_color('Couldn\'t find genres', ColorType.ERROR)}'
+    before_screen += '\n' + get_color('Couldn\'t find genres', ColorType.ERROR)
   
   clear()
   try:
@@ -35,11 +36,19 @@ def init(config: Config, url: str):
     if id == 'exit' or id == None:
       return False
     
-    if url:
-      fileInfo = SimpleNamespace(**ydl.extract_info(url, download=download))
-      if download:
-        t.assign_file(fileInfo.audio_ext)
+    if url and download:
+      try:
+        file_info = SimpleNamespace(**ydl.extract_info(url, download=download))
+        t.set_ext(file_info.audio_ext)
         t.metadata(get_lyrics=get_lyrics, get_genres=get_genres)
+      except DownloadError as error:
+        print("Couldn't download file: " + error)
+        Confirm().start(False)
+        return False
+      except Exception as error:
+        print(error)
+        Confirm().start(False)
+        return False
       
     clear()
     print_formatted(table)

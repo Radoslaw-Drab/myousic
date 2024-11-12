@@ -87,7 +87,7 @@ class TrackExtended:
     self.value_dict: dict = default
     self.update_track(default)
 
-    self.temp_folder = config.data.temp_folder or 'tmp'
+    self.temp_folder = Path(config.data.temp_folder) or Path.joinpath(config.path, Path('tmp'))
     self.output_folder = config.data.output_folder or './'
     self.default_artwork_size = max(config.data.artwork_size, 100)
     self.audio_file_id = audio_file_id
@@ -105,8 +105,8 @@ class TrackExtended:
     from tabulate import SEPARATING_LINE, tabulate
     track = self.value
     data = [
-      ['Track', track.trackName],
-      ['Artist', track.artistName],
+      ['Track', get_color(track.trackName, ColorType.PRIMARY)],
+      ['Artist', get_color(track.artistName, ColorType.PRIMARY)],
       ['Album', track.collectionName if track.collectionName else '-'],
       SEPARATING_LINE,
       ['Genre', track.primaryGenreName if track.primaryGenreName else '-'],
@@ -117,9 +117,9 @@ class TrackExtended:
       ['Track', f'{track.trackNumber} / {track.trackCount}' if track.trackNumber != None and track.trackCount != None else '-'],
       ['Disc', f'{track.discNumber} / {track.discCount}' if track.discNumber != None and track.discCount != None else '-'],
       SEPARATING_LINE,
-      ['Artwork', get_color(self.get_artwork_url(), ColorType.PRIMARY) if self.get_artwork_url() else '-'],
-      ['Lyrics', get_color(self.get_lyrics_url(), ColorType.PRIMARY)],
-      ['Genres', get_color(self.get_genres_url(), ColorType.PRIMARY)]
+      ['Artwork', get_color(self.get_artwork_url(), ColorType.SECONDARY) if self.get_artwork_url() else '-'],
+      ['Lyrics', get_color(self.get_lyrics_url(), ColorType.SECONDARY)],
+      ['Genres', get_color(self.get_genres_url(), ColorType.SECONDARY)]
     ]
 
     table = tabulate(data, tablefmt='plain') + '\n'
@@ -202,7 +202,7 @@ class TrackExtended:
     date_regex = r'\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z'
     return datetime.strptime(date, "%Y-%m-%dT%H:%M:%SZ").year if re.match(date_regex, date) else date if date != '' else datetime.now().year
   def get_artwork_url(self, size: int = 1000):
-    return re.sub('100x100', f'{max(size, 100)}x{max(size, 100)}', self.value.artworkUrl100) if self.value.artworkUrl100 else None
+    return re.sub(r'100x100(?=bb\..{2,4})', f'{max(size, 100)}x{max(size, 100)}', self.value.artworkUrl100) if self.value.artworkUrl100 else None
   def get_lyrics_url(self):
     return self.Lyrics.get_url(self.config.modify_lyrics(ReplacementProp.ARTIST, self.value.artistName), self.config.modify_lyrics(ReplacementProp.TITLE, self.value.trackName))
   def get_artwork_ext(self):
@@ -241,7 +241,7 @@ class TrackExtended:
     artworkImage = open(artwork_image_filename, 'rb') if artwork_url else None
     date = str(self.get_date())
     
-    
+
     audio = music_tag.load_file(self.get_temp_audio_path())
     audio['title'] = self.value.trackName
     audio['artist'] = self.value.artistName
