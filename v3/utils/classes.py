@@ -1,18 +1,19 @@
-from typing import Callable
+from typing import Callable, TypeVar, Generic
 
-class Listener:
-  def __init__(self, listener: Callable | None = None):
+Function = TypeVar('Function', bound=Callable)
+class Listener(Generic[Function]):
+  def __init__(self, listener: Function | None = None):
     self.__listener = self.set(listener)
     pass
-  def set(self, listener: Callable | None):
+  def set(self, listener: Function | None):
     self.__listener = listener
   def emit(self, *args):
     return self.__listener(*args) if self.__listener != None else None
-class Listeners:
-  def __init__(self, listeners: list[Callable] = []):
-    self.__listeners: list[Callable] = listeners
+class Listeners(Generic[Function]):
+  def __init__(self, listeners: list[Function] = []):
+    self.__listeners = listeners
     pass
-  def add(self, listener: Callable):
+  def add(self, listener: Function):
     self.__listeners.append(listener)
     return len(self.__listeners) - 1
   def remove(self, index: int):
