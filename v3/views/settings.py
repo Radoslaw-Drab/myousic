@@ -32,7 +32,11 @@ def init(config: Config):
       [
         index + 1, 
         get_name(key), 
-        data[key] if type(data[key]) is not dict else '--- Object ---'
+            data[key] 
+          if type(data[key]) is not list else
+            ' | '.join(data[key][:3]) + ' | ...' 
+        if type(data[key]) is not dict else
+          '--- Object ---'
       ]
     )
   table = tabulate(table_options, tablefmt='presto').split('\n')
@@ -98,15 +102,8 @@ def input_by_type(config: Config, key: str, value: any, extra_data: dict = {}):
     return default_input(name, value)
   if type(value) is list:
     clear()
-      # return [*items, 'test']
-    # v = EditableList( 
-    #   add_function=add, 
-    #   remove_function=remove,
-    #   items=value, 
-    #   title=name,
-    # ).get_list()
-    default_index = extra_data.get('default_index') or -1
-    default_action_index = extra_data.get('default_action_index') or 0
+    default_index: int = extra_data.get('default_index') if extra_data.get('default_index') != None else -1
+    default_action_index: int = extra_data.get('default_action_index') if extra_data.get('default_action_index') != None else 0
   
     (index, action, action_index) = List(
     value, 
@@ -114,16 +111,15 @@ def input_by_type(config: Config, key: str, value: any, extra_data: dict = {}):
     default_index=default_index,
     default_action_index=default_action_index,
     actions=[
-      ('add-below', 'Add below'), 
-      ('add-above', 'Add above'), 
-      ('move-up', 'Move up'), 
-      ('move-down', 'Move down'), 
-      ('edit', 'Edit'), 
-      ('remove', 'Remove')
+      ('add-below', 'Add below', True), 
+      ('add-above', 'Add above', True), 
+      ('move-up', 'Move up', len(value) > 0), 
+      ('move-down', 'Move down', len(value) > 0), 
+      ('edit', 'Edit', len(value) > 0), 
+      ('remove', 'Remove', len(value) > 0),
+      ('save', 'Save', True)
     ]).get_action()
     extra_data['default_action_index'] = action_index
-    # v = List(value, name, custom_bindings={}).get_index()
-
     if action == 'add-below':
       value.insert(index + 1, default_input(name, ''))
       extra_data['default_index'] = -1
@@ -135,16 +131,17 @@ def input_by_type(config: Config, key: str, value: any, extra_data: dict = {}):
       extra_data['default_index'] = index
     if action == 'remove':
       value = [*value[:index], *value[index + 1:]]
-    if action == 'move-up':
-      t = [*value[:index - 1], value[index], value[index - 1], *value[index + 1:]]
-      print(t)
-      input()
-      value = t
-      extra_data['default_index'] = index - 1
-    if action == 'move-down':
+    if action == 'move-up' and index - 1 >= 0:
+      value = [*value[:index - 1], value[index], value[index - 1], *value[index + 1:]]
+      extra_data['default_index'] = max(index - 1, 0)
+    if action == 'move-down' and index + 1 < len(value):
       value = [*value[:index], value[index + 1], value[index], *value[index + 2:]]
       extra_data['default_index'] = index + 1
-    
+    if action == 'save':
+      return value
 
     return input_by_type(config, key, value, extra_data)
+  if type(value) is dict:
+    print('Not implemented')
+    input()
   return value

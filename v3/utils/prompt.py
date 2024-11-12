@@ -102,7 +102,7 @@ class List:
       list_prefix: bool = True, 
       custom_bindings: dict[str, CustomBinding] = {},
       on_custom_binding: Callable[[str, list[ListItem], int], None] = None,
-      actions: list[tuple[str, str]] = [],
+      actions: list[tuple[str, str, bool]] = [],
       default_action_index: int = 0,
       default_index: int = 0
       ):
@@ -152,6 +152,7 @@ class List:
     ])))
 
     self.__init_bindings()
+    self.__set_action(0)
     
   def __init_bindings(self):
     @self.__bindings.add('enter')
@@ -383,24 +384,33 @@ class List:
           text += '- '
       if len(self.actions) > 1:
         text += '\nAction: '
-        text += ' | '.join(
-          [
-            get_color(self.actions[action_index][1], ColorType.SECONDARY) 
-              if action_index == self.__current_action_index else 
-            self.actions[action_index][1] 
-            for action_index in range(len(self.actions))
-          ])
+        actions: list[str] = []
+        for action_index in range(len(self.actions)):
+          action = self.actions[action_index]
+          if action[2] == False:
+            actions.append(get_color(action[1], ColorType.GREY))
+            continue
+          if action_index == self.__current_action_index:
+            actions.append(get_color(action[1], ColorType.SECONDARY))
+          else:
+            actions.append(action[1])
+        
+        text += ' | '.join(actions)
     
       self.__header.formatted_text_control.text = HTML(xml_format(text))
     except Exception as error:
       self.__header.formatted_text_control.text = get_color(str(error), ColorType.ERROR) + '\n\n' + text
 
   def __set_action(self, value: int = 1):
+    if len(self.actions) <= 0:
+      return
     self.__current_action_index += value
     if self.__current_action_index >= len(self.actions):
       self.__current_action_index = 0
     if self.__current_action_index < 0:
       self.__current_action_index = len(self.actions) - 1
+    if self.actions[self.__current_action_index][2] == False:
+      return self.__set_action()
     self.__show()
   def __change_sort(self, step: int = 1):
     self.sort_type_index += max(min(step, 1), -1)
