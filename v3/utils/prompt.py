@@ -292,12 +292,7 @@ class List:
     text = ''
     show_count_half = round(self.show_count / 2)
     greater_than_show_count = len(self.items) >= self.show_count
-    items = list(filter(
-        lambda i: 
-          (i >= self.__current_index - show_count_half and i < self.__current_index + show_count_half) or len(self.items) <= self.show_count, 
-        range(len(self.items)))
-      )
-
+    items = list(filter(lambda i: (i >= self.__current_index - show_count_half and i < self.__current_index + show_count_half) or len(self.items) <= self.show_count, range(len(self.items))))
     if len(items) < self.show_count and len(self.items) > self.show_count:
       is_last = items[len(items) - 1] >= len(self.items) - 1
       if is_last: 
