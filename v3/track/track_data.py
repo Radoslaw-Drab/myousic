@@ -32,11 +32,11 @@ class Lyrics:
   
 
 class Genre:
-  def __init__(self, page_url: str = 'https://www.last.fm/music', excluded_genres: list[str] = [], included_genres: list[str] = [], replacements: dict[str, str] = {}):
+  def __init__(self, page_url: str = 'https://www.last.fm/music', excluded_genres: list[str] = [], included_genres: list[str] = [], modifiers: dict[str, str] = {}):
     self.page_url = page_url
     self.excluded_genres = excluded_genres
     self.included_genres = included_genres
-    self.replacements = replacements
+    self.modifiers = modifiers
     self.__parse = True
 
     pass
@@ -65,10 +65,10 @@ class Genre:
       return True
   def parse(self, value: bool):
     self.__parse = value
-  def __replace_genres(self, text: str):
+  def __genres_modifiers(self, text: str):
     newText = text
-    for regex in self.replacements.keys():
-      newText = re.sub(regex, self.replacements[regex], newText)
+    for regex in self.modifiers.keys():
+      newText = re.sub(regex, self.modifiers[regex], newText)
     return newText
   def get_url(self, artist: str, title: str) -> str:
     _artist = urllib.parse.quote_plus(artist) if self.__parse else re.sub('/$', '', re.sub('^/', '', artist))
@@ -88,7 +88,7 @@ class Genre:
     selection = soup.select(f'h3 a[href^="/tag"]')
     genres: list[str] = []
     for s in selection:
-      genres.append(self.__replace_genres(uppercase(s.text)))
+      genres.append(self.__genres_modifiers(uppercase(s.text)))
       
     filtered = set(filter(lambda genre: self.isValid(genre), genres))
     return filtered

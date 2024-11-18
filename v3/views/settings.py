@@ -11,10 +11,10 @@ key_names = {
   'show_count': 'List show count',
   'excluded_genres': 'Genres to exclude (RegEx)',
   'included_genres': 'Genres to include (RegEx)',
-  'replace_genres': 'Replacement in genres (RegEx)',
-  'replace_lyrics': 'Replacement in lyrics (RegEx)',
-  'lyrics_regex': 'Replacement in lyrics url (RegEx)',
-  'genres_regex': 'Replacement in genres url (RegEx)'
+  'genres_modifiers': 'Modifier in genres (RegEx)',
+  'lyrics_modifiers': 'Modifier in lyrics (RegEx)',
+  'lyrics_url_modifiers': 'Modifier in lyrics url (RegEx)',
+  'genres_url_modifiers': 'Modifier in genres url (RegEx)'
 }
 
 def init(config: Config):

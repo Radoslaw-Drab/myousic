@@ -8,7 +8,7 @@ import music_tag
 from shutil import move, rmtree
 from utils.prompt import Input, get_color, ColorType, print_formatted, Confirm
 from utils.system import clear
-from utils.config import Config, ReplacementProp
+from utils.config import Config, ModifierProp
 from track.track_data import Genre, Lyrics
 
 class Explicitness(Enum):
@@ -98,7 +98,7 @@ class TrackExtended:
     self.Genre = Genre(
       excluded_genres=[f'^{self.value.primaryGenreName}$', *self.config.data.excluded_genres], 
       included_genres=self.config.data.included_genres,
-      replacements=self.config.data.replace_genres
+      modifiers=self.config.data.genres_modifiers
     )
 
   def get_table(self, print_table: bool = False):
@@ -204,17 +204,17 @@ class TrackExtended:
   def get_artwork_url(self, size: int = 1000):
     return re.sub(r'100x100(?=bb\..{2,4})', f'{max(size, 100)}x{max(size, 100)}', self.value.artworkUrl100) if self.value.artworkUrl100 else None
   def get_lyrics_url(self):
-    return self.Lyrics.get_url(self.config.modify_lyrics(ReplacementProp.ARTIST, self.value.artistName), self.config.modify_lyrics(ReplacementProp.TITLE, self.value.trackName))
+    return self.Lyrics.get_url(self.config.modify_lyrics(ModifierProp.ARTIST, self.value.artistName), self.config.modify_lyrics(ModifierProp.TITLE, self.value.trackName))
   def get_artwork_ext(self):
     return re.match('\\..+$', self.value.artworkUrl100) if self.value.artworkUrl100 else None
   def get_lyrics(self) -> tuple[str | None, str]:
     lyricsFile = self.get_child_file('txt')
-    (lyrics, url) = self.Lyrics.get_to_file(lyricsFile, self.config.modify_lyrics(ReplacementProp.ARTIST, self.value.artistName), self.config.modify_lyrics(ReplacementProp.TITLE, self.value.trackName))
+    (lyrics, url) = self.Lyrics.get_to_file(lyricsFile, self.config.modify_lyrics(ModifierProp.ARTIST, self.value.artistName), self.config.modify_lyrics(ModifierProp.TITLE, self.value.trackName))
     if lyrics != None:
       l = lyrics
-      replacement = self.config.data.replace_lyrics
-      for key in [*replacement.keys()]:
-        l = re.sub(key, replacement[key], l)
+      modifier = self.config.data.lyrics_modifiers
+      for key in [*modifier.keys()]:
+        l = re.sub(key, modifier[key], l)
       lyrics = l
     return (lyrics, url)
   def check_lyrics(self):
@@ -226,10 +226,10 @@ class TrackExtended:
 
   def get_genres_url(self):
     self.Genre.parse(False)
-    return self.Genre.get_url(self.config.modify_genres(ReplacementProp.ARTIST, self.value.artistName), self.config.modify_genres(ReplacementProp.TITLE, self.value.trackName))
+    return self.Genre.get_url(self.config.modify_genres(ModifierProp.ARTIST, self.value.artistName), self.config.modify_genres(ModifierProp.TITLE, self.value.trackName))
   def get_genres_str(self):
     self.Genre.parse(False)
-    return self.Genre.get_str(self.config.modify_genres(ReplacementProp.ARTIST, self.value.artistName), self.config.modify_genres(ReplacementProp.TITLE, self.value.trackName), prefix='[', suffix=']')
+    return self.Genre.get_str(self.config.modify_genres(ModifierProp.ARTIST, self.value.artistName), self.config.modify_genres(ModifierProp.TITLE, self.value.trackName), prefix='[', suffix=']')
   
   def metadata(self, get_lyrics: bool = True, get_genres: bool = True):
     if self.__is_saved:

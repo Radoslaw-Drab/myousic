@@ -4,15 +4,15 @@ from types import SimpleNamespace
 from pathlib import Path
 from enum import Enum
 
-class Replacement(dict):
+class Modifier(dict):
   title: dict[str, str]
   artist: dict[str, str]
-class ReplacementProp(Enum):
+class ModifierProp(Enum):
   TITLE = 'title'
   ARTIST = 'artist'
-class ReplacementType(Enum):
-  LYRICS = 'lyrics_regex'
-  GENRES = 'genres_regex'
+class ModifierType(Enum):
+  LYRICS = 'lyrics_url_modifiers'
+  GENRES = 'genres_url_modifiers'
 
 class SortType(Enum):
   ASC = 'asc'
@@ -29,10 +29,10 @@ class ConfigType():
   artwork_size: int
   excluded_genres: list[str]
   included_genres: list[str]
-  replace_genres: dict[str, str]
-  replace_lyrics: dict[str, str]
-  lyrics_regex: Replacement
-  genres_regex: Replacement
+  genres_modifiers: dict[str, str]
+  lyrics_modifiers: dict[str, str]
+  lyrics_url_modifiers: Modifier
+  genres_url_modifiers: Modifier
   show_count: int
 
 default_config_type: ConfigType = {
@@ -41,13 +41,13 @@ default_config_type: ConfigType = {
   "artwork_size": 1000,
   "excluded_genres": [],
   "included_genres": [],
-  "replace_genres": {},
-  "replace_lyrics": {},
-  "lyrics_regex": {
+  "genres_modifiers": {},
+  "lyrics_modifiers": {},
+  "lyrics_url_modifiers": {
     "artist": {},
     "title": {}
   },
-  "genres_regex": {
+  "genres_url_modifiers": {
     "artist": {},
     "title": {}
   },
@@ -64,10 +64,10 @@ class Config:
     self.__keys = {}
     self.default_config_type: dict = default_config_type
   
-  def modify_genres(self, prop: ReplacementProp, text: str):
-    return self.__modify_by_regex(ReplacementType.GENRES, prop, text)
-  def modify_lyrics(self, prop: ReplacementProp, text: str):
-    return self.__modify_by_regex(ReplacementType.LYRICS, prop, text)
+  def modify_genres(self, prop: ModifierProp, text: str):
+    return self.__modify_by_regex(ModifierType.GENRES, prop, text)
+  def modify_lyrics(self, prop: ModifierProp, text: str):
+    return self.__modify_by_regex(ModifierType.LYRICS, prop, text)
   def get_data(self):
     self.data: ConfigType = SimpleNamespace(**self.get_data_json())
     return self.data
@@ -86,13 +86,13 @@ class Config:
     # print(self.json_data)
     # input()
     return self.json_data
-  def __modify_by_regex(self, type: ReplacementType, prop: ReplacementProp, text: str):
+  def __modify_by_regex(self, type: ModifierType, prop: ModifierProp, text: str):
     newText = text
-    replacement: Replacement = self.json_data.get(type.value)
-    if replacement == None:
+    modifier: Modifier = self.json_data.get(type.value)
+    if modifier == None:
       return newText
 
-    regExs: dict[str, str] | None = replacement.get(prop.value)
+    regExs: dict[str, str] | None = modifier.get(prop.value)
 
     if regExs == None or len(regExs.keys()) == 0:
       return newText
