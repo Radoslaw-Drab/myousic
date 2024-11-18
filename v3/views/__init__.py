@@ -14,8 +14,7 @@ from utils.prompt import clear, List, get_color, ColorType
 
 def init():
   clear()
-  config = Config('./')
-  # config = Config(Path.home())
+  config = Config(Path.home())
   config.set_key('id', uuid4())
   config.set_key('itunes_api_url', 'https://itunes.apple.com/search')
   config.set_key('temp_folder', config.data.temp_folder)
@@ -26,10 +25,10 @@ def init():
       {"id": "search-download", "name": "Search and Download"}, 
       {"id": "search", "name": "Search"}, 
       {"id": "download", "name": "Download"}, 
-      {"id": "settings", "name": "Settings"}, 
+      # {"id": "settings", "name": "Settings"}, 
       {"id": "exit", "name": "Exit"}
-      ], 
-      ordered=False, title=get_color('Myousic', ColorType.PRIMARY)).get_value()
+    ], 
+    ordered=False, title=get_color('Myousic', ColorType.PRIMARY)).get_value()
     
     url: str | None = None
     
