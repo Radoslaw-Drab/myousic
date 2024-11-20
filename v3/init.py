@@ -6,8 +6,8 @@ from pathlib import Path
 
 
 def get_args():
-  parser = argparse.ArgumentParser('build.py', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-  parser.add_argument('--build', '-b', help='Build script for your system', action='store_false')
+  parser = argparse.ArgumentParser('init.py', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+  parser.add_argument('--build', '-b', help='Build script for your system', action='store_true')
   parser.add_argument('--install', '-i', help='Install dependencies for script', dest='env_dir', action='store', metavar='ENV_NAME', type=str)
   parser.add_argument('--requirements', '-r', help='Requirements path for script', action='store', metavar='PATH', type=str, default='./requirements.txt')
   return parser.parse_args()
@@ -16,10 +16,6 @@ def main():
   args = get_args()
 
   requirements_path = Path(args.requirements)
-  if args.build:
-    requirements = subprocess.check_output(['pip', 'freeze'], text=True)
-    open(requirements_path, 'w').write(requirements)
-    subprocess.run(['pyinstaller', '-F', 'myousic.py'])
   if args.env_dir:
     env_dir = Path(args.env_dir)
     if Path.exists(env_dir):
@@ -40,6 +36,11 @@ def main():
         print(f"{env_dir}\\Scripts\\activate.bat")
     else:
         print(f"source {env_dir}/bin/activate")
+        
+  if args.build:
+    requirements = subprocess.check_output(['pip', 'freeze'], text=True)
+    open(requirements_path, 'w').write(requirements)
+    subprocess.run(['pyinstaller', '-F', 'myousic.py'])
 
 def add_gitignore(name: str, path: Path = Path('./.gitignore'), raise_error: bool = False) -> None:
   if not Path.exists(path):
