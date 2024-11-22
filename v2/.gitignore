@@ -1,4 +1,8 @@
-node_modules/
+__pycache__
+tmp
+build
 dist
-yarn.lock
-package-lock.json
+*.spec
+.DS_STORE
+dev
+config.json
