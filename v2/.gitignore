@@ -1,8 +1,0 @@
-__pycache__
-tmp
-build
-dist
-*.spec
-.DS_STORE
-dev
-config.json

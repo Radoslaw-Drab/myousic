@@ -1,8 +1,0 @@
-{
-	"markdownlint.config": {
-		"no-inline-html": false
-	},
-	"markdown.preview.typographer": false,
-	"markdown.updateLinksOnFileMove.enabled": "always",
-	"markdown.extension.syntax.plainTheme": false
-}
