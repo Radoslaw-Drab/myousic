@@ -46,6 +46,7 @@ def init(search: str | None, *, config: Config) -> TrackExtended | None:
       return init(search=search_menu(get_color('No results found for ', ColorType.ERROR) + get_color(search, ColorType.PRIMARY)), config=config)
     except Exit:
       return None
+  elif len(results) == 1:
 
   def get_date(date: str):
     return datetime.strptime(date, "%Y-%m-%dT%H:%M:%SZ")

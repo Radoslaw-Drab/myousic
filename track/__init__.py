@@ -111,7 +111,7 @@ class TrackExtended:
       SEPARATING_LINE,
       ['Genre', track.primaryGenreName if track.primaryGenreName else '-'],
       ['Other Genres', self.get_genres_str()],
-      ['Explicitness', track.collectionExplicitness if track.collectionExplicitness else '-'],
+      ['Explicitness', track.trackExplicitness if track.trackExplicitness else '-'],
       SEPARATING_LINE,
       ['Date', str(self.get_date())],
       ['Track', f'{track.trackNumber} / {track.trackCount}' if track.trackNumber != None and track.trackCount != None else '-'],
