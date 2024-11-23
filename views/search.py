@@ -5,9 +5,10 @@ import re
 
 from track import TrackExtended
 from utils import Exit
-from utils.config import Config, SortType
+from utils.config import Config
 from utils.views import search_menu
 from utils.prompt import List, Color, clear
+from type.Config import Sort
 
 
 def init(search: str | None, *, config: Config) -> TrackExtended | None:
@@ -39,7 +40,7 @@ def init(search: str | None, *, config: Config) -> TrackExtended | None:
     input()
     return
   
-  results: list[dict] = sorted(data['results'], key=lambda d: d[config.get_sort_key()], reverse=config.data.sort_type == SortType.DESC) if config.get_sort_key() != None else data['results']    
+  results: list[dict] = sorted(data['results'], key=lambda d: d[config.get_sort_key()], reverse=config.data.sort_type == Sort.Type.DESC) if config.get_sort_key() != None else data['results']    
 
   if len(results) == 0:
     try:
@@ -52,10 +53,10 @@ def init(search: str | None, *, config: Config) -> TrackExtended | None:
   def get_date(date: str):
     return datetime.strptime(date, "%Y-%m-%dT%H:%M:%SZ")
   
-  def sort_results(sort_by: str | None, sort_type: SortType = SortType.ASC):
+  def sort_results(sort_by: str | None, sort_type: Sort.Type = Sort.Type.ASC):
     from tabulate import tabulate
     data: list[dict[str, int | dict]] = []
-    sorted_results = sorted(results, key=lambda d: d[config.get_sort_key(sort_by)], reverse=sort_type == SortType.DESC) if sort_by != None else results
+    sorted_results = sorted(results, key=lambda d: d[config.get_sort_key(sort_by)], reverse=sort_type == Sort.Type.DESC) if sort_by != None else results
 
     for index in range(len(sorted_results)):
       r = sorted_results[index]
@@ -75,7 +76,7 @@ def init(search: str | None, *, config: Config) -> TrackExtended | None:
     return [{"id": str(data[index].get('id')), "name": lines[index]} for index in range(len(lines))]
 
   title = f"Select for {Color.get_color(search, Color.PRIMARY)}"
-  options = sort_results(None, SortType.ASC)
+  options = sort_results(None, Sort.Type.ASC)
   
   try:
     index = List(

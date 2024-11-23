@@ -6,8 +6,10 @@ from pathlib import Path
 import urllib.request, urllib.parse
 import music_tag
 from shutil import move, rmtree
+
 from utils.prompt import Input, Color, Confirm, clear
-from utils.config import Config, ModifierProp
+from utils.config import Config
+from type.Config import UrlModifier
 from track.track_data import Genre, Lyrics
 
 class Explicitness(Enum):
@@ -203,12 +205,12 @@ class TrackExtended:
   def get_artwork_url(self, size: int = 1000):
     return re.sub(r'100x100(?=bb\..{2,4})', f'{max(size, 100)}x{max(size, 100)}', self.value.artworkUrl100) if self.value.artworkUrl100 else None
   def get_lyrics_url(self):
-    return self.Lyrics.get_url(self.config.modify_lyrics(ModifierProp.ARTIST, self.value.artistName), self.config.modify_lyrics(ModifierProp.TITLE, self.value.trackName))
+    return self.Lyrics.get_url(self.config.modify_lyrics(UrlModifier.Key.ARTIST, self.value.artistName), self.config.modify_lyrics(UrlModifier.Key.TITLE, self.value.trackName))
   def get_artwork_ext(self):
     return re.match('\\..+$', self.value.artworkUrl100) if self.value.artworkUrl100 else None
   def get_lyrics(self) -> tuple[str | None, str]:
     lyrics_file_path = self.get_child_file('txt')
-    (lyrics, url) = self.Lyrics.get_to_file(lyrics_file_path, self.config.modify_lyrics(ModifierProp.ARTIST, self.value.artistName), self.config.modify_lyrics(ModifierProp.TITLE, self.value.trackName))
+    (lyrics, url) = self.Lyrics.get_to_file(lyrics_file_path, self.config.modify_lyrics(UrlModifier.Key.ARTIST, self.value.artistName), self.config.modify_lyrics(UrlModifier.Key.TITLE, self.value.trackName))
     if lyrics != None:
       l = lyrics
       modifier = self.config.data.lyrics_modifiers
@@ -225,10 +227,10 @@ class TrackExtended:
 
   def get_genres_url(self):
     self.Genre.parse(False)
-    return self.Genre.get_url(self.config.modify_genres(ModifierProp.ARTIST, self.value.artistName), self.config.modify_genres(ModifierProp.TITLE, self.value.trackName))
+    return self.Genre.get_url(self.config.modify_genres(UrlModifier.Key.ARTIST, self.value.artistName), self.config.modify_genres(UrlModifier.Key.TITLE, self.value.trackName))
   def get_genres_str(self):
     self.Genre.parse(False)
-    return self.Genre.get_str(self.config.modify_genres(ModifierProp.ARTIST, self.value.artistName), self.config.modify_genres(ModifierProp.TITLE, self.value.trackName), prefix='[', suffix=']')
+    return self.Genre.get_str(self.config.modify_genres(UrlModifier.Key.ARTIST, self.value.artistName), self.config.modify_genres(UrlModifier.Key.TITLE, self.value.trackName), prefix='[', suffix=']')
   
   def metadata(self, get_lyrics: bool = True, get_genres: bool = True):
     if self.__is_saved:

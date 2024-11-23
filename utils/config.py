@@ -1,107 +1,42 @@
 import json
 import re
-from types import SimpleNamespace
 from pathlib import Path
-from enum import Enum
 
-class Modifier(dict):
-  title: dict[str, str]
-  artist: dict[str, str]
-class ModifierProp(Enum):
-  TITLE = 'title'
-  ARTIST = 'artist'
-class ModifierType(Enum):
-  LYRICS = 'lyrics_url_modifiers'
-  GENRES = 'genres_url_modifiers'
-
-class SortType(Enum):
-  ASC = 'asc'
-  DESC = 'desc'
-class ConfigType():
-  class Sort(Enum):
-    ARTIST = 'artist'
-    TITLE = 'title'
-    ALBUM = 'album'
-    YEAR = 'year'
-
-  temp_folder: str
-  output_folder: str
-  artwork_size: int
-  excluded_genres: list[str]
-  included_genres: list[str]
-  genres_modifiers: dict[str, str]
-  lyrics_modifiers: dict[str, str]
-  lyrics_url_modifiers: Modifier
-  genres_url_modifiers: Modifier
-  show_count: int
-
-default_config_type: ConfigType = {
-  "temp_folder": str(Path.joinpath(Path.home(), 'tmp')),
-  "output_folder": str(Path.joinpath(Path.home(), "music")),
-  "artwork_size": 1000,
-  "excluded_genres": [],
-  "included_genres": [],
-  "genres_modifiers": {},
-  "lyrics_modifiers": {},
-  "lyrics_url_modifiers": {
-    "artist": {},
-    "title": {}
-  },
-  "genres_url_modifiers": {
-    "artist": {},
-    "title": {}
-  },
-  "show_count": 10
-}
-
+from utils.classes import Obj
+from type.Config import AppConfig, UrlModifier
 
   
 class Config:
-  file: str = 'config.json'
-  def __init__(self, path: str = './'):
-    self.path = Path(path, self.file)
+  def __init__(self, path: Path = Path(Path.home(), 'myousic.json')):
+    self.path = path
+    self.data = AppConfig()
+    self.keys = AppConfig.Keys()
     self.get_data()
-    self.__keys = {}
-    self.default_config_type: dict = default_config_type
   
-  def modify_genres(self, prop: ModifierProp, text: str):
-    return self.__modify_by_regex(ModifierType.GENRES, prop, text)
-  def modify_lyrics(self, prop: ModifierProp, text: str):
-    return self.__modify_by_regex(ModifierType.LYRICS, prop, text)
-  def get_data(self):
-    self.data: ConfigType = SimpleNamespace(**self.get_data_json())
-    return self.data
-  def set_data(self, key: str, value: any):
-    d = self.get_data_json()
-    obj = {}
-    obj[key] = value
+  def update_config(self, config: AppConfig | None = None) -> None:
     with open(self.path, 'w') as file:
-      file.write(json.dumps({ **d, **obj }))
-    self.get_data()
-    
-  def get_data_json(self):
-    if not Path.exists(self.path):
-      with open(self.path, 'w') as file:
-        file.write(json.dumps(default_config_type))
-    
+      file.write(config.json() if config else self.data.json())
+  def __get_config(self) -> AppConfig:
     with open(self.path) as file:
-      self.json_data = { **default_config_type, **json.loads(file.read()) }
-    return self.json_data
-  def __modify_by_regex(self, type: ModifierType, prop: ModifierProp, text: str):
-    new_text = text
-    modifier: Modifier = self.json_data.get(type.value)
-    if modifier == None:
-      return new_text
+      json_data = json.loads(file.read())
+      app_config = AppConfig()
+      for json_prop in json_data:
+        setattr(app_config, json_prop, json_data[json_prop])
+      return app_config
 
-    regExs: dict[str, str] | None = modifier.get(prop.value)
-
-    if regExs == None or len(regExs.keys()) == 0:
-      return new_text
+  def set_data[T](self, key: str, value: T):
+    if key not in Obj.get_attributes(self):
+      raise ValueError(f'Invalid {key} key')
     
-    for regEx in regExs.keys():
-      new_text = re.sub(regEx, regExs[regEx], new_text)
-
-    return new_text
+    setattr(self.data, key, value)
+    self.update_config()
+  def get_data(self) -> AppConfig:
+    if not Path.exists(self.path):
+      self.update_config(AppConfig())
+    
+    self.data = self.__get_config()
+    return self.data
+  
   def get_sort_key(self, key: str | None = None):
     if key == 'title':
       return 'trackName'
@@ -112,11 +47,28 @@ class Config:
     elif key == 'album':
       return 'collectionName'
     return None
-  def set_key(self, key: str, value: any):
-    d = {}
-    d[key] = value
-    self.__keys.update(d)
-    self.keys: Keys = SimpleNamespace(**self.__keys)
+  def set_key[T](self, key: str, value: T):
+    setattr(self.keys, key, value)
+  
+  def modify_genres(self, key: UrlModifier.Key, text: str):
+    return self.__modify_by_regex(UrlModifier.Prop.GENRES, key, text)
+  def modify_lyrics(self, key: UrlModifier.Key, text: str):
+    return self.__modify_by_regex(UrlModifier.Prop.LYRICS, key, text)
+  def __modify_by_regex(self, type: UrlModifier, key: UrlModifier.Key, text: str):
+    new_text = text
+    modifier: UrlModifier = getattr(self.data, type.value)
+    if modifier == None:
+      return new_text
+
+    regExs: dict[str, str] | None = modifier.get(key.value)
+
+    if regExs == None or len(regExs.keys()) == 0:
+      return new_text
+    
+    for regEx in regExs.keys():
+      new_text = re.sub(regEx, regExs[regEx], new_text)
+
+    return new_text
     
   def youtube_dl(self):
     id = self.keys.id
@@ -138,12 +90,3 @@ class Config:
       }
     }
     return YoutubeDL(options)
-  
-  
-  
-class Keys(dict):
-  from uuid import UUID
-  id: UUID | None
-  itunes_api_url: str | None
-  temp_folder: str | None
-  output_folder: str | None

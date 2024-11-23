@@ -11,16 +11,16 @@ from tabulate import tabulate
 from utils.prompt.color import Color
 from utils.prompt.processors import FormatText
 from utils.prompt.xml import xml_format
-from utils.config import SortType
 from utils.classes import Listener
 from utils.number import clamp
 from utils import Exit
+from type.Config import Sort
 
 
 class ListItem(dict):
   id: str
   name: str | None = None
-class ListSortFunction(Callable[[str, SortType], list[ListItem | str]]):
+class ListSortFunction(Callable[[str, Sort.Type], list[ListItem | str]]):
   pass
 class CustomBindingFunction(Callable[[list[ListItem | str], int], list[ListItem | str]]):
   pass
@@ -65,7 +65,7 @@ class List:
     self.horizontal = horizontal
     self.sort_types = sort_types
     self.sort_type_index: int = -1
-    self.sort_dir: SortType = SortType.ASC
+    self.sort_dir: Sort.Type = Sort.Type.ASC
     self.list_prefix = list_prefix
     self.__show_info: bool = show_info
     self.__selection_color = selection_color
@@ -360,10 +360,10 @@ class List:
     self.__show()
   def __change_sort_dir(self):
     if self.sort_type_index != -1:  
-      if self.sort_dir == SortType.ASC:
-        self.sort_dir = SortType.DESC
+      if self.sort_dir == Sort.Type.ASC:
+        self.sort_dir = Sort.Type.DESC
       else:
-        self.sort_dir = SortType.ASC
+        self.sort_dir = Sort.Type.ASC
       self.__set_items(self.__sort_listener.emit(self.sort_types[self.sort_type_index], self.sort_dir))
       self.__show()
   def set_sort_listener(self, listener: ListSortFunction | None):
