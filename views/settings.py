@@ -1,6 +1,6 @@
 from tabulate import tabulate
 from utils import Exit
-from utils.prompt import clear, List, Input, get_color, ColorType, EditableList, ListItem
+from utils.prompt import clear, List, Input, Color, ListItem
 from utils.config import Config
 from prompt_toolkit import PromptSession, Application
 
@@ -61,7 +61,7 @@ def get_name(key: str):
   return key if key not in key_names else key_names[key]
 def setting(config: Config, key: str, value: any):
   clear()
-  name = get_color(get_name(key), ColorType.PRIMARY) + ': ' + str(value)
+  name =Color.get_color(get_name(key), Color.PRIMARY) + ': ' + str(value)
   try: 
     action = List(
       [
@@ -90,10 +90,10 @@ def input_by_type(config: Config, key: str, value: any, extra_data: dict = {}):
   def default_input(name: str, value: str):
     [v] = Input(
       name, 
-      ('New value: ', get_color(value, ColorType.GREY))
+      ('New value: ', Color.get_color(value, Color.GREY))
     ).start()
     return v if type(value) is str else int(v)
-  name = get_color(get_name(key), ColorType.PRIMARY)
+  name = Color.get_color(get_name(key), Color.PRIMARY)
   if type(value) is bool:
     clear()
     v = List(["True", "False"], name + ': ' + str(value), horizontal=True).get_value()

@@ -4,7 +4,7 @@ from prompt_toolkit.clipboard.pyperclip import PyperclipClipboard
 
 from utils import Exit
 from utils.config import Config
-from utils.prompt import clear, Input, get_color, ColorType
+from utils.prompt import clear, Input, Color
 
 
 def search_menu(title: str | None = 'Search'):
@@ -49,8 +49,8 @@ def input_url(config: Config) -> str | None:
       
     
     [url_input] = Input(
-      get_color('Youtube info: ', ColorType.GREY) + get_color(title, ColorType.PRIMARY), 
-      ('YouTube URL' + (f" ({get_color('Enter', ColorType.SECONDARY)} for default)" if url_valid else '') + ': ', get_color(url, ColorType.GREY) if url_valid else '')
+      Color.get_color('Youtube info: ', Color.GREY) + Color.get_color(title, Color.PRIMARY), 
+      ('YouTube URL' + (f" ({Color.get_color('Enter', Color.SECONDARY)} for default)" if url_valid else '') + ': ', Color.get_color(url, Color.GREY) if url_valid else '')
     ).start()
     
     url = url_input if url_input != '' else url

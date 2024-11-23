@@ -3,7 +3,7 @@ from datetime import datetime
 
 from track import TrackExtended
 from utils import Exit
-from utils.prompt import get_color, ColorType
+from utils.prompt import Color
 from utils.views import get_artist_track
 from utils.config import Config
 
@@ -20,7 +20,7 @@ def init(config: Config, url: str):
     date = str(datetime.strptime(info.get('upload_date'), '%Y%m%d').year)
   
   def placeholder(text: str):
-    return get_color(text, ColorType.GREY)
+    return Color.get_color(text, Color.ColorType.GREY)
   try:
     track.get_missing({
       'artistName': ('Artist', placeholder(artist)),

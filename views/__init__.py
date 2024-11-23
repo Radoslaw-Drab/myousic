@@ -10,7 +10,7 @@ from views.settings import init as settings
 from utils import Exit
 from utils.config import Config
 from utils.views import search_menu, input_url
-from utils.prompt import clear, List, get_color, ColorType
+from utils.prompt import clear, List, Color
 
 def init():
   clear()
@@ -28,7 +28,7 @@ def init():
       # {"id": "settings", "name": "Settings"}, 
       {"id": "exit", "name": "Exit"}
     ], 
-    ordered=False, title=get_color('Myousic', ColorType.PRIMARY)).get_value()
+    ordered=False, title=Color.get_color('Myousic', Color.PRIMARY)).get_value()
     
     url: str | None = None
     

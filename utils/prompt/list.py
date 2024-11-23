@@ -1,82 +1,25 @@
+from typing import Callable
 from prompt_toolkit.key_binding import KeyBindings, KeyPressEvent
 from prompt_toolkit.application import Application
 from prompt_toolkit.buffer import Buffer
 from prompt_toolkit.layout import Layout, BufferControl, Window, HSplit, AnyContainer
-from prompt_toolkit.layout.processors import Processor, Transformation, TransformationInput
-from prompt_toolkit import PromptSession, print_formatted_text
-from prompt_toolkit.formatted_text import HTML, to_formatted_text, fragment_list_to_text
 from prompt_toolkit.widgets import Label, HorizontalLine, Box
+from prompt_toolkit.formatted_text import HTML
 from tabulate import tabulate
-from typing import Callable
-import re
-import re
 
-from utils import Exit
+
+from utils.prompt.color import Color
+from utils.prompt.processors import FormatText
+from utils.prompt.xml import xml_format
 from utils.config import SortType
 from utils.classes import Listener
 from utils.number import clamp
-from utils.system import clear 
+from utils import Exit
 
-
-class Input:
-  def __init__(self, title: str | None = None, *prompts: list[str | tuple[str, str]]):
-    self.__prompts: list[str | tuple[str, str]] = prompts
-    self.__values: list[str] = []
-    self.__title = title
-    
-    self.__ps = PromptSession()
-    pass
-  def start(self, clear_screen: bool = True, padding_left: int = 2, show_info: bool = True):
-    if clear_screen:
-      clear()
-    if show_info:
-      table = tabulate(
-        [[get_color('CTRL + C', ColorType.GREY), get_color('Exit', ColorType.GREY)]],
-        tablefmt='plain'
-      )
-      print_formatted(table)
-    if self.__title:
-      print_formatted(self.__title)
-    try:
-      for prompt in self.__prompts:
-        padding = ''.ljust(padding_left)
-        value = padding
-        placeholder = None
-        if type(prompt) == str:
-          value += prompt
-        elif type(prompt) == tuple:
-          value += prompt[0]
-          placeholder = prompt[1]
-          
-        value = self.__ps.prompt(HTML(value), placeholder=HTML(placeholder) if placeholder else '') or placeholder or ''
-        if value == None:
-          continue
-        
-        self.__values.append(remove_color(value))
-      return self.__values
-    except KeyboardInterrupt:
-      raise Exit
 
 class ListItem(dict):
   id: str
   name: str | None = None
-class ColorType():
-  PRIMARY = '#ff5500'
-  SECONDARY = '#0055ff'
-  GREY = '#555555'
-  ERROR = '#ff0000'
-  WARNING = '#ffff00'
-  SUCCESS = '#00ff00'
-
-xml_replacements: dict[str, str] = {
-  "&": "&amp;"
-}
-def xml_format(text: str):
-  new_text = text
-  for key in xml_replacements.keys():
-    new_text = re.sub(key, xml_replacements[key], new_text)
-  return new_text
-
 class ListSortFunction(Callable[[str, SortType], list[ListItem | str]]):
   pass
 class CustomBindingFunction(Callable[[list[ListItem | str], int], list[ListItem | str]]):
@@ -98,7 +41,7 @@ class List:
       horizontal: bool = False, 
       sort_types: list[str] | None = None, 
       sort_listener: ListSortFunction | None = None, 
-      show_info: bool = False, selection_color: str = ColorType.SECONDARY, 
+      show_info: bool = False, selection_color: str = Color.SECONDARY, 
       list_prefix: bool = True, 
       custom_bindings: dict[str, CustomBinding] = {},
       on_custom_binding: Callable[[str, list[ListItem], int], None] = None,
@@ -321,10 +264,10 @@ class List:
       has_items_from_end = index < items[0]
       is_last = index == items[len(items) - 1]
       if print_line:
-        text += get_color(''.ljust(longestItemSize + len(prefix), '-'), ColorType.GREY) + '\n'
+        text += Color.get_color(''.ljust(longestItemSize + len(prefix), '-'), Color.GREY) + '\n'
       term = xml_format(term)
       if is_current_index:
-        text += get_color(term, self.__selection_color)
+        text += Color.get_color(term, self.__selection_color)
       else:
         text += term
       text += end
@@ -335,7 +278,7 @@ class List:
   
   def __get_controls(self):
     def get(text: str):
-      return get_color(text, ColorType.GREY)
+      return Color.get_color(text, Color.GREY)
     data: list[list[str]] = []
     data.append([get('Tab'), get(f'{"Hide" if self.__show_info else "Show"} controls')])
     
@@ -368,7 +311,7 @@ class List:
 
       if self.title != None:
         if self.prefix != None:
-          text += get_color(self.prefix, ColorType.SECONDARY) + ' '
+          text += Color.get_color(self.prefix, Color.SECONDARY) + ' '
         text += (self.title)
         
       if self.sort_types != None and len(self.sort_types) > 0:
@@ -383,10 +326,10 @@ class List:
         for action_index in range(len(self.actions)):
           action = self.actions[action_index]
           if action[2] == False:
-            actions.append(get_color(action[1], ColorType.GREY))
+            actions.append(Color.get_color(action[1], Color.GREY))
             continue
           if action_index == self.__current_action_index:
-            actions.append(get_color(action[1], ColorType.SECONDARY))
+            actions.append(Color.get_color(action[1], Color.SECONDARY))
           else:
             actions.append(action[1])
         
@@ -394,7 +337,7 @@ class List:
     
       self.__header.formatted_text_control.text = HTML(xml_format(text))
     except Exception as error:
-      self.__header.formatted_text_control.text = get_color(str(error), ColorType.ERROR) + '\n\n' + text
+      self.__header.formatted_text_control.text = Color.get_color(str(error), Color.ERROR) + '\n\n' + text
 
   def __set_action(self, value: int = 1):
     if len(self.actions) <= 0:
@@ -425,56 +368,3 @@ class List:
       self.__show()
   def set_sort_listener(self, listener: ListSortFunction | None):
     self.__sort_listener.set(listener)
-
-def remove_color(text: str):
-  match = re.search(r'(?<=\>).*(?=<\/style>)', text)
-  inside_styles = re.sub(r'<\/.*>', '', match.group()) if match else None
-  return inside_styles if inside_styles else text
-def get_color(text: str, type: ColorType | str, modify_type: str = 'fg'):
-  return '\n'.join([f'<style {modify_type}="{type}">{t}</style>' for t in text.split('\n')])
-def print_formatted(text: str, sep: str = ' ', end: str = '\n', padding_left: int = 2):
-  splitted_text = [''.ljust(padding_left) + line for line in text.split('\n')]
-  try:
-    print_formatted_text(HTML(xml_format('\n'.join(splitted_text))), sep=sep, end=end)
-  except:
-    print('\n'.join(splitted_text), sep=sep, end=end)
-def print_color(text: str, type: ColorType, modify_type: str = 'fg', sep: str = ' ', end: str = '\n'):
-  print_formatted(get_color(text, type, modify_type), sep=sep, end=end)
-
-class FormatText(Processor):
-    def apply_transformation(self, ti: TransformationInput):
-        try:
-          fragments = to_formatted_text(HTML(fragment_list_to_text(ti.fragments)))
-          return Transformation(fragments)
-        except Exception as error:
-          return Transformation(ti.fragments)
-
-class Confirm:
-  def __init__(self, title: str = f'Press {get_color("Enter", ColorType.SECONDARY)} to continue.'):
-    self.__title = title
-    
-    self.__ps = PromptSession()
-    
-  def start(self, clear_screen: bool = True, padding_left: int = 2):
-    if clear_screen:
-      clear()
-    try:
-        self.__ps.prompt(HTML(''.ljust(padding_left) + self.__title))
-    except KeyboardInterrupt:
-      raise Exit 
-    
-class EditableList(List):
-  def __init__(self, add_function: CustomBindingFunction | None = None, remove_function: CustomBindingFunction | None = None, edit_function: CustomBindingFunction | None = None, **kwargs):
-    bindings: dict[str, CustomBinding] = {}
-    if add_function:
-      bindings.update({ 'c-n': ('CTRL + N', 'Add', add_function) })
-    if remove_function:
-      bindings.update({ 'c-d': ('CTRL + D', 'Remove', remove_function) })
-    if edit_function:
-      bindings.update({ 'c-e': ('CTRL + E', 'Edit', edit_function) })
-      
-    super().__init__(**kwargs, custom_bindings=bindings)
-    pass
-  def get_list(self):
-    self.get_index()
-    return self.items

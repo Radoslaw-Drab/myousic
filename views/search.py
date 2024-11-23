@@ -7,7 +7,7 @@ from track import TrackExtended
 from utils import Exit
 from utils.config import Config, SortType
 from utils.views import search_menu
-from utils.prompt import clear, List, get_color, print_color, ColorType
+from utils.prompt import List, Color, clear
 
 
 def init(search: str | None, *, config: Config) -> TrackExtended | None:
@@ -28,14 +28,14 @@ def init(search: str | None, *, config: Config) -> TrackExtended | None:
 
   response = requests.get(f'{itunes_api_url}?{q}')
   if not response.ok:
-    print_color(response.reason, ColorType.ERROR)
+    Color.print_color(response.reason, Color.ERROR)
     input()
     return
   data: dict = response.json()
   
   error = data.get('errorMessage')
   if error:
-    print_color(error, ColorType.ERROR)
+    Color.print_color(error, Color.ERROR)
     input()
     return
   
@@ -43,7 +43,7 @@ def init(search: str | None, *, config: Config) -> TrackExtended | None:
 
   if len(results) == 0:
     try:
-      return init(search=search_menu(get_color('No results found for ', ColorType.ERROR) + get_color(search, ColorType.PRIMARY)), config=config)
+      return init(search=search_menu(Color.get_color('No results found for ', Color.ERROR) + Color.get_color(search, Color.PRIMARY)), config=config)
     except Exit:
       return None
   elif len(results) == 1:
@@ -74,7 +74,7 @@ def init(search: str | None, *, config: Config) -> TrackExtended | None:
     lines = re.split(r'\n(?=^ *\d+)', table, flags=re.MULTILINE)
     return [{"id": str(data[index].get('id')), "name": lines[index]} for index in range(len(lines))]
 
-  title = f"Select for {get_color(search, ColorType.PRIMARY)}"
+  title = f"Select for {Color.get_color(search, Color.PRIMARY)}"
   options = sort_results(None, SortType.ASC)
   
   try:

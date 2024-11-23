@@ -5,7 +5,7 @@ from views.search import init as search
 from utils import Exit
 from utils.views import get_info_term
 from utils.config import Config
-from utils.prompt import get_color, ColorType, clear, List, print_formatted, print_color, Confirm
+from utils.prompt import Color, List, Confirm, clear
 
 def init(config: Config, url: str):
   ydl = config.youtube_dl()
@@ -19,9 +19,9 @@ def init(config: Config, url: str):
   before_screen = table
 
   if not valid_lyrics:
-    before_screen += '\n' + get_color('Couldn\'t find lyrics', ColorType.ERROR)
+    before_screen += '\n' + Color.get_color('Couldn\'t find lyrics', Color.ERROR)
   if not valid_genres:
-    before_screen += '\n' + get_color('Couldn\'t find genres', ColorType.ERROR)
+    before_screen += '\n' + Color.get_color('Couldn\'t find genres', Color.ERROR)
   
   clear()
   try:
@@ -51,9 +51,9 @@ def init(config: Config, url: str):
         return False
       
     clear()
-    print_formatted(table)
+    Color.print_formatted(table)
     if download:
-      print_color('\nDownloaded', ColorType.SUCCESS)
+      Color.print_color('\nDownloaded', Color.SUCCESS)
       t.save()
     Confirm().start(False)
     return True

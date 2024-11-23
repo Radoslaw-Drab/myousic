@@ -6,8 +6,7 @@ from pathlib import Path
 import urllib.request, urllib.parse
 import music_tag
 from shutil import move, rmtree
-from utils.prompt import Input, get_color, ColorType, print_formatted, Confirm
-from utils.system import clear
+from utils.prompt import Input, Color, Confirm, clear
 from utils.config import Config, ModifierProp
 from track.track_data import Genre, Lyrics
 
@@ -105,8 +104,8 @@ class TrackExtended:
     from tabulate import SEPARATING_LINE, tabulate
     track = self.value
     data = [
-      ['Track', get_color(track.trackName, ColorType.PRIMARY)],
-      ['Artist', get_color(track.artistName, ColorType.PRIMARY)],
+      ['Track', Color.get_color(track.trackName, Color.PRIMARY)],
+      ['Artist', Color.get_color(track.artistName, Color.PRIMARY)],
       ['Album', track.collectionName if track.collectionName else '-'],
       SEPARATING_LINE,
       ['Genre', track.primaryGenreName if track.primaryGenreName else '-'],
@@ -117,15 +116,15 @@ class TrackExtended:
       ['Track', f'{track.trackNumber} / {track.trackCount}' if track.trackNumber != None and track.trackCount != None else '-'],
       ['Disc', f'{track.discNumber} / {track.discCount}' if track.discNumber != None and track.discCount != None else '-'],
       SEPARATING_LINE,
-      ['Artwork', get_color(self.get_artwork_url(), ColorType.SECONDARY) if self.get_artwork_url() else '-'],
-      ['Lyrics', get_color(self.get_lyrics_url(), ColorType.SECONDARY)],
-      ['Genres', get_color(self.get_genres_url(), ColorType.SECONDARY)]
+      ['Artwork', Color.get_color(self.get_artwork_url(), Color.SECONDARY) if self.get_artwork_url() else '-'],
+      ['Lyrics', Color.get_color(self.get_lyrics_url(), Color.SECONDARY)],
+      ['Genres', Color.get_color(self.get_genres_url(), Color.SECONDARY)]
     ]
 
     table = tabulate(data, tablefmt='plain') + '\n'
     if print_table:
       clear()
-      print_formatted(table)
+      Color.print_formatted(table)
       Confirm().start(False)
     return table
 
