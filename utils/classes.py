@@ -25,3 +25,8 @@ class Listeners(Generic[Function]):
       values = listener(*args)
       output.append((listener_index, [*values]))
     return output
+  
+class Obj:
+  @staticmethod
+  def get_attributes(obj: object) -> list[str]:
+    return [attr for attr in dir(obj) if not callable(getattr(obj, attr)) and not attr.startswith("__") and not attr.startswith('_')]
