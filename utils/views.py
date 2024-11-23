@@ -30,7 +30,8 @@ def get_artist_track(config: Config, url: str) -> tuple[str, str]:
     artist = artist_match.string
 
   title_split = formattedTitle.split('-')
-  return (artist, formattedTitle) if re.search(artist, formattedTitle) == None or len(title_split) <= 1 else (title_split[0], *title_split[1:])
+
+  return (artist, formattedTitle) if re.search(artist.lower(), formattedTitle.lower()) != None or len(title_split) <= 1 else (title_split[0], *title_split[1:])
   
 def get_info_term(config: Config, url: str):
   (artist, title) = get_artist_track(config, url)
@@ -40,7 +41,7 @@ def valid_url(url: str | None):
 def input_url(config: Config) -> str | None: 
   try:
     clear()
-    url = PyperclipClipboard().get_data().text
+    url = PyperclipClipboard().get_data().text or ''
     title = 'No URL'
     url_valid = valid_url(url)
     if url_valid:
