@@ -1,6 +1,7 @@
 import urllib
 import requests
 from datetime import datetime
+import re
 
 from track import TrackExtended
 from utils import Exit
@@ -40,37 +41,38 @@ def init(search: str | None, *, config: Config) -> TrackExtended | None:
   
   results: list[dict] = sorted(data['results'], key=lambda d: d[config.get_sort_key()], reverse=config.data.sort_type == SortType.DESC) if config.get_sort_key() != None else data['results']    
 
-
   if len(results) == 0:
     try:
       return init(search=search_menu(get_color('No results found for ', ColorType.ERROR) + get_color(search, ColorType.PRIMARY)), config=config)
     except Exit:
       return None
   elif len(results) == 1:
+    return TrackExtended(results[0], id, config)
 
   def get_date(date: str):
     return datetime.strptime(date, "%Y-%m-%dT%H:%M:%SZ")
   
   def sort_results(sort_by: str | None, sort_type: SortType = SortType.ASC):
     from tabulate import tabulate
-    ids: list[int] = []
-    data: list[dict] = []
+    data: list[dict[str, int | dict]] = []
     sorted_results = sorted(results, key=lambda d: d[config.get_sort_key(sort_by)], reverse=sort_type == SortType.DESC) if sort_by != None else results
 
     for index in range(len(sorted_results)):
       r = sorted_results[index]
       year = get_date(r.get('releaseDate')).year if r.get('releaseDate') != None else '-'
-      ids.append(sorted_results[index].get('trackId'))
       data.append({
-        'index': index + 1,
-        'artistName': r.get('artistName'),
-        'trackName': r.get('trackName'),
-        'collectionName': r.get('collectionName'),
-        'year': year
+        'id': r.get('trackId'),
+        'values': {
+          'index': index + 1,
+          'artistName': r.get('artistName'),
+          'trackName': r.get('trackName'),
+          'collectionName': r.get('collectionName'),
+          'year': year
+        }
       })
-    table = tabulate([[value for value in d.values()] for d in data], tablefmt='presto')
-    lines = table.split('\n')
-    return [{"id": ids[index], "name": lines[index]} for index in range(len(lines))]
+    table = tabulate([[value for value in d.get('values').values()] for d in data], tablefmt='presto', maxcolwidths=[None, 30, 30, 20, None])
+    lines = re.split(r'\n(?=^ *\d+)', table, flags=re.MULTILINE)
+    return [{"id": str(data[index].get('id')), "name": lines[index]} for index in range(len(lines))]
 
   title = f"Select for {get_color(search, ColorType.PRIMARY)}"
   options = sort_results(None, SortType.ASC)
@@ -86,13 +88,14 @@ def init(search: str | None, *, config: Config) -> TrackExtended | None:
     ).get_value() if len(options) > 1 else 0
     
     if index == None: return
-    result = {}
-    
+    result: dict | None = None
     for data in results:
-      if data.get('trackId') != index:
+      if str(data.get('trackId')) != index:
         continue
       result = data
-      
+    if result == None:
+      raise ValueError(f'Invalid {index} index')
+
     return TrackExtended(result, id, config=config)
   except Exit:
     return
