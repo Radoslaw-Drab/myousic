@@ -3,7 +3,7 @@ from prompt_toolkit.formatted_text import HTML
 from tabulate import tabulate
 
 from utils.prompt.color import Color
-from utils.system import clear
+from utils.prompt.generic import clear
 from utils import Exit
 
 class Input:
