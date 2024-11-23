@@ -88,20 +88,20 @@ class Config:
       self.json_data = { **default_config_type, **json.loads(file.read()) }
     return self.json_data
   def __modify_by_regex(self, type: ModifierType, prop: ModifierProp, text: str):
-    newText = text
+    new_text = text
     modifier: Modifier = self.json_data.get(type.value)
     if modifier == None:
-      return newText
+      return new_text
 
     regExs: dict[str, str] | None = modifier.get(prop.value)
 
     if regExs == None or len(regExs.keys()) == 0:
-      return newText
+      return new_text
     
     for regEx in regExs.keys():
-      newText = re.sub(regEx, regExs[regEx], newText)
+      new_text = re.sub(regEx, regExs[regEx], new_text)
 
-    return newText
+    return new_text
   def get_sort_key(self, key: str | None = None):
     if key == 'title':
       return 'trackName'

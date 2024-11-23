@@ -208,8 +208,8 @@ class TrackExtended:
   def get_artwork_ext(self):
     return re.match('\\..+$', self.value.artworkUrl100) if self.value.artworkUrl100 else None
   def get_lyrics(self) -> tuple[str | None, str]:
-    lyricsFile = self.get_child_file('txt')
-    (lyrics, url) = self.Lyrics.get_to_file(lyricsFile, self.config.modify_lyrics(ModifierProp.ARTIST, self.value.artistName), self.config.modify_lyrics(ModifierProp.TITLE, self.value.trackName))
+    lyrics_file_path = self.get_child_file('txt')
+    (lyrics, url) = self.Lyrics.get_to_file(lyrics_file_path, self.config.modify_lyrics(ModifierProp.ARTIST, self.value.artistName), self.config.modify_lyrics(ModifierProp.TITLE, self.value.trackName))
     if lyrics != None:
       l = lyrics
       modifier = self.config.data.lyrics_modifiers
@@ -244,10 +244,10 @@ class TrackExtended:
       with urllib.request.urlopen(artwork_url) as url:
         with open(artwork_image_filename, 'wb') as f:
           f.write(url.read())
-    artworkImage = None
+    artwork_image = None
     if artwork_url:
       with open(artwork_image_filename, 'rb') as file:
-        artworkImage = file
+        artwork_image = file
     date = str(self.get_date())
     
 
@@ -263,8 +263,8 @@ class TrackExtended:
     audio['disc-number'] = self.value.discNumber or 1
     audio['total-discs'] = self.value.discCount or 1
     audio['year'] = date 
-    if artworkImage:
-      audio['artwork'] = artworkImage.read()
+    if artwork_image:
+      audio['artwork'] = artwork_image.read()
 
     audio.save()
 

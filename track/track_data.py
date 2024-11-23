@@ -40,7 +40,7 @@ class Genre:
     self.__parse = True
 
     pass
-  def isValid(self, genre: str):
+  def is_valid(self, genre: str):
     # Searches for specific string which is in 'included_genres' but not in 'excluded_genres'
     if len(self.excluded_genres) > 0 and len(self.included_genres) > 0:
       new_included = list(filter(lambda included: included not in self.excluded_genres , self.included_genres))
@@ -90,7 +90,7 @@ class Genre:
     for s in selection:
       genres.append(self.__genres_modifiers(uppercase(s.text)))
       
-    filtered = set(filter(lambda genre: self.isValid(genre), genres))
+    filtered = set(filter(lambda genre: self.is_valid(genre), genres))
     return filtered
   def get_str(self, artist: str, title: str, prefix: str | None = None, suffix: str | None = None, splitter: str = ' '):
     new_str = ''
