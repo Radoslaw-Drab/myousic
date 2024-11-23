@@ -431,7 +431,7 @@ def remove_color(text: str):
   inside_styles = re.sub(r'<\/.*>', '', match.group()) if match else None
   return inside_styles if inside_styles else text
 def get_color(text: str, type: ColorType | str, modify_type: str = 'fg'):
-  return f'<style {modify_type}="{type}">{text}</style>'
+  return '\n'.join([f'<style {modify_type}="{type}">{t}</style>' for t in text.split('\n')])
 def print_formatted(text: str, sep: str = ' ', end: str = '\n', padding_left: int = 2):
   splitted_text = [''.ljust(padding_left) + line for line in text.split('\n')]
   try:
