@@ -75,16 +75,17 @@ class Config:
     d = self.get_data_json()
     obj = {}
     obj[key] = value
-    open(self.path, 'w').write(json.dumps({ **d, **obj }))
+    with open(self.path, 'w') as file:
+      file.write(json.dumps({ **d, **obj }))
     self.get_data()
     
   def get_data_json(self):
     if not Path.exists(self.path):
-      open(self.path, 'w').write(json.dumps(default_config_type))
-    file = open(self.path, 'r')
-    self.json_data = { **default_config_type, **json.loads(file.read()) }
-    # print(self.json_data)
-    # input()
+      with open(self.path, 'w') as file:
+        file.write(json.dumps(default_config_type))
+    
+    with open(self.path) as file:
+      self.json_data = { **default_config_type, **json.loads(file.read()) }
     return self.json_data
   def __modify_by_regex(self, type: ModifierType, prop: ModifierProp, text: str):
     newText = text

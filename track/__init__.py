@@ -244,7 +244,10 @@ class TrackExtended:
       with urllib.request.urlopen(artwork_url) as url:
         with open(artwork_image_filename, 'wb') as f:
           f.write(url.read())
-    artworkImage = open(artwork_image_filename, 'rb') if artwork_url else None
+    artworkImage = None
+    if artwork_url:
+      with open(artwork_image_filename, 'rb') as file:
+        artworkImage = file
     date = str(self.get_date())
     
 

@@ -23,8 +23,8 @@ class Lyrics:
   def get_to_file(self, file: str, artist: str, title: str, custom_lyrics: str | None = None) -> tuple[str | None, str]:
     (lyrics, url) = self.get(artist, title) if custom_lyrics == None else (custom_lyrics, '')
     if lyrics != None:
-      f = open(file, 'w', encoding='utf-8')
-      f.write(lyrics)
+      with open(file, 'w', encoding='utf-8') as f:
+        f.write(lyrics)
       return (lyrics, url)
     return (None, url)
   def format(self, lyrics: str) -> str:

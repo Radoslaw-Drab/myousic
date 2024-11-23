@@ -39,7 +39,8 @@ def main():
         
   if args.build:
     requirements = subprocess.check_output(['pip', 'freeze'], text=True)
-    open(requirements_path, 'w').write(requirements)
+    with open(requirements_path, 'w') as file:
+      file.write(requirements)
     subprocess.run(['pyinstaller', '-F', 'myousic.py'])
 
 def add_gitignore(name: str, path: Path = Path('./.gitignore'), raise_error: bool = False) -> None:
