@@ -12,7 +12,7 @@ class Lyrics:
     self.__custom_url: str | None = None
     pass
   def get_url(self, artist: str, title: str):
-    return (self.lyrics_url + '/' + (urllib.parse.quote(artist + '/' + title)) if self.__custom_url == None else self.__custom_url).lower()
+    return re.sub(r' ', '+', (self.lyrics_url + '/' + (urllib.parse.quote(artist + '/' + title)) if self.__custom_url == None else self.__custom_url).lower())
   def get(self, artist: str, title: str) -> tuple[str | None, str]:
     url = self.get_url(artist, title)
     try:
@@ -79,7 +79,7 @@ class Genre:
     if not page.ok and self.__parse == False:
       self.parse(True)
       return self.get_url(artist, title)
-    return url
+    return re.sub(r' ', '+', url)
     
   def get(self, artist: str, title: str):
     page = requests.get(self.get_url(artist, title))
