@@ -3,7 +3,7 @@ from prompt_toolkit import PromptSession
 from tabulate import tabulate
 
 from utils import Exit
-from utils.prompt import clear, List, Input, Color, ListItem
+from utils.prompt import clear, List, Input, Color
 from utils.config import Config
 
 key_names = {
