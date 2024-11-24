@@ -28,7 +28,7 @@ class Lyrics:
       return (lyrics, url)
     return (None, url)
   def format(self, lyrics: str) -> str:
-    return re.sub(r'\[.*\]\n', r'\r', re.sub(r'\n{2}', r'\r', lyrics))
+    return re.sub(r'^\n*', r'\n', re.sub(r'\n*\[.*\]', r'\n', lyrics), flags=re.NOFLAG)
   
 
 class Genre:
