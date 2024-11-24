@@ -16,7 +16,7 @@ from utils import Exit
 def init():
   clear()
   args = Args()
-  config = Config(args.config_path)
+  config = Config(Path(args.config_path))
   config.set_key('id', uuid4())
   config.set_key('temp_folder', config.data.temp_folder)
   config.set_key('output_folder', config.data.output_folder)

@@ -4,7 +4,7 @@ from pathlib import Path
 from utils.classes import Obj
 
 class Args():
-  config_path: Path = Path(Path.home(), 'myousic.json')
+  config_path: str = str(Path(Path.home(), 'myousic.json'))
   
   def __init__(self) -> None:
     parser = argparse.ArgumentParser('myousic', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
@@ -13,7 +13,7 @@ class Args():
 
     args = parser.parse_args()
 
-    for arg in args:
+    for arg in args.__dict__:
       if arg not in Obj.get_attributes(self):
         continue
-      setattr(self, arg, args[arg])
+      setattr(self, arg, getattr(args, arg))
