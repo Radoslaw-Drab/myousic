@@ -6,6 +6,7 @@ from views.search import init as search
 from views.download import init as download
 from views.bare_download import init as bare_download
 from views.settings import init as settings
+from views.lyrics import init as lyrics
 
 from utils.config import Config
 from utils.args import Args
@@ -22,10 +23,11 @@ def init():
   config.set_key('output_folder', config.data.output_folder)
   
   try:
-    id = List[Literal['search-download', 'search', 'download', 'settings', 'exit']]([
+    id = List[Literal['search-download', 'search', 'download', 'lyrics', 'settings', 'exit']]([
       List.Item("search-download", "Search and Download"), 
       List.Item("search", "Search"), 
       List.Item("download", "Download"), 
+      List.Item("lyrics", "Lyrics"), 
       # List.Item("settings", "Settings"), 
       List.Item("exit", "Exit")
     ], 
@@ -45,6 +47,8 @@ def init():
       download(config, url)
     if id == 'download' and url:
       bare_download(config, url)
+    if id == 'lyrics':
+      lyrics(config)
     if id == 'settings':
       settings(config)
     if id == 'exit' or id == None:
