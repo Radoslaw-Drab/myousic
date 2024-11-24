@@ -13,8 +13,8 @@ def init(config: Config, url: str):
   t = search(term, config=config)
   if t == None:
     return False
-  valid_lyrics = t.check_lyrics()
-  valid_genres = t.check_genres()
+  valid_lyrics = t.valid_lyrics()
+  valid_genres = t.valid_genres()
   table = t.get_table()
   before_screen = table
 

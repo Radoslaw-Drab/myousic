@@ -102,6 +102,9 @@ class TrackExtended:
       modifiers=self.config.data.genres_modifiers
     )
 
+  def __repr__(self) -> str:
+    return f'TrackExtended(id={self.audio_file_id}, title={self.value.trackName}, artist={self.value.artistName}, album={self.value.collectionName}, year={self.get_date()})'
+
   def get_table(self, print_table: bool = False):
     from tabulate import SEPARATING_LINE, tabulate
     track = self.value
@@ -208,9 +211,35 @@ class TrackExtended:
     return self.Lyrics.get_url(self.config.modify_lyrics(UrlModifier.Key.ARTIST, self.value.artistName), self.config.modify_lyrics(UrlModifier.Key.TITLE, self.value.trackName))
   def get_artwork_ext(self):
     return re.match('\\..+$', self.value.artworkUrl100) if self.value.artworkUrl100 else None
-  def get_lyrics(self) -> tuple[str | None, str]:
+  def get_lyrics(self, to_file: bool = True) -> tuple[str | None, str]:
+    """
+    Retrieves the lyrics of a song and the URL from which they were fetched.
+
+    This function attempts to retrieve the lyrics of a song from an online source.
+    It returns a tuple containing two values:
+    - The first value is a string representing the lyrics of the song, or `None` if the lyrics could not be found.
+    - The second value is the URL from which the lyrics were retrieved.
+
+    Parameters:
+      to_file (bool): Choose whether to save lyrics to temp file. Default: True
+    Returns:
+        tuple: A tuple containing two elements:
+            - str | None: The lyrics of the song or None if lyrics are not available.
+            - str: The URL from which the lyrics were retrieved.
+
+    Example:
+    ```
+        lyrics, url = get_lyrics()
+        if lyrics:
+            print(f"Lyrics: {lyrics}")
+        else:
+            print("Lyrics not found.")
+    ```
+    """
     lyrics_file_path = self.get_child_file('txt')
-    (lyrics, url) = self.Lyrics.get_to_file(lyrics_file_path, self.config.modify_lyrics(UrlModifier.Key.ARTIST, self.value.artistName), self.config.modify_lyrics(UrlModifier.Key.TITLE, self.value.trackName))
+    artist = self.config.modify_lyrics(UrlModifier.Key.ARTIST, self.value.artistName)
+    title = self.config.modify_lyrics(UrlModifier.Key.TITLE, self.value.trackName)
+    (lyrics, url) = self.Lyrics.get_to_file(lyrics_file_path, artist, title) if to_file else self.Lyrics.get(artist, title)
     if lyrics != None:
       l = lyrics
       modifier = self.config.data.lyrics_modifiers
@@ -218,10 +247,10 @@ class TrackExtended:
         l = re.sub(key, modifier[key], l)
       lyrics = l
     return (lyrics, url)
-  def check_lyrics(self):
+  def valid_lyrics(self):
     import requests
     return requests.get(self.get_lyrics_url()).ok
-  def check_genres(self):
+  def valid_genres(self):
     import requests
     return requests.get(self.get_genres_url()).ok
 
