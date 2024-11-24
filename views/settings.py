@@ -1,8 +1,10 @@
+from typing import Literal
+from prompt_toolkit import PromptSession
 from tabulate import tabulate
+
 from utils import Exit
 from utils.prompt import clear, List, Input, Color, ListItem
 from utils.config import Config
-from prompt_toolkit import PromptSession, Application
 
 key_names = {
   'temp_folder': 'Temporary folder',
@@ -63,11 +65,11 @@ def setting(config: Config, key: str, value: any):
   clear()
   name =Color.get_color(get_name(key), Color.PRIMARY) + ': ' + str(value)
   try: 
-    action = List(
+    action = List[Literal['change', 'reset', 'exit']](
       [
-        { "id": "change", "name": "Change" },
-        { "id": "reset", "name": "Reset to default" },
-        { "id": "exit", "name": "Exit" }
+        List.Item("change", "Change"),
+        List.Item("reset", "Reset to default"),
+        List.Item("exit", "Exit")
       ], 
       name, horizontal=True).get_value()
     
@@ -96,8 +98,8 @@ def input_by_type(config: Config, key: str, value: any, extra_data: dict = {}):
   name = Color.get_color(get_name(key), Color.PRIMARY)
   if type(value) is bool:
     clear()
-    v = List(["True", "False"], name + ': ' + str(value), horizontal=True).get_value()
-    return v == "True"
+    v = List([True, False], name + ': ' + str(value), horizontal=True).get_value()
+    return v == True
   if type(value) is int or type(value) is str:
     return default_input(name, value)
   if type(value) is list:

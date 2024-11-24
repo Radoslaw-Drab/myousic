@@ -1,4 +1,5 @@
 from types import SimpleNamespace
+from typing import Literal
 from yt_dlp.utils import DownloadError
 
 from views.search import init as search
@@ -25,9 +26,9 @@ def init(config: Config, url: str):
   
   clear()
   try:
-    id = List([
-        { "id": "download", "name": "Download" } if url else None, 
-        { "id": 'exit', "name": 'Exit' }
+    id = List[Literal['download', 'exit']]([
+        List.Item("download", "Download") if url else None, 
+        List.Item('exit', 'Exit')
       ], before_screen=before_screen, horizontal=True).get_value()
     download = id == 'download'
     

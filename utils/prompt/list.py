@@ -1,4 +1,4 @@
-from typing import Callable
+from typing import Callable, Generic, TypeVar
 from prompt_toolkit.key_binding import KeyBindings, KeyPressEvent
 from prompt_toolkit.application import Application
 from prompt_toolkit.buffer import Buffer
@@ -16,20 +16,23 @@ from utils.number import clamp
 from utils import Exit
 from type.Config import Sort
 
-
-class ListItem(dict):
-  id: str
-  name: str | None = None
-class ListSortFunction(Callable[[str, Sort.Type], list[ListItem | str]]):
+Id = TypeVar('Id', default=str)
+class ListItem(Generic[Id]):
+  def __init__(self, id: Id, name: str | None = None) -> None:
+    self.id = id
+    self.name = name
+    
+class ListSortFunction(Callable[[str, Sort.Type], list[ListItem[Id] | Id | str]]):
   pass
-class CustomBindingFunction(Callable[[list[ListItem | str], int], list[ListItem | str]]):
+class CustomBindingFunction(Callable[[list[ListItem[Id] | Id | str], int], list[ListItem[Id] | Id | str]]):
   pass
 class CustomBinding(tuple[str, str, CustomBindingFunction]):
   pass
 
-class List:
+class List(Generic[Id]):
+  Item = ListItem
   def __init__(self, 
-      items: list[ListItem | str | None], 
+      items: list[ListItem[Id] | Id | str | tuple[Id, str] | None], 
       title: str | None = None, 
       loop: bool = True, 
       ordered: bool = True, 
@@ -44,12 +47,12 @@ class List:
       show_info: bool = False, selection_color: str = Color.SECONDARY, 
       list_prefix: bool = True, 
       custom_bindings: dict[str, CustomBinding] = {},
-      on_custom_binding: Callable[[str, list[ListItem], int], None] = None,
+      on_custom_binding: Callable[[str, list[ListItem[Id]], int], None] = None,
       actions: list[tuple[str, str, bool]] = [],
       default_action_index: int = 0,
       default_index: int = 0
       ):
-    self.items: list[ListItem] = self.__set_items(items)
+    self.items: list[ListItem[Id]] = self.__set_items(items)
     self.__default_items = self.__set_items(items)
     self.selected = []
     self.__current_index: int = len(self.items) + default_index if default_index < 0 else default_index 
@@ -150,21 +153,25 @@ class List:
       self.__root = container
     else:
       self.__root = container(self.__root)
-  def __set_items(self, items: list[ListItem | str | None] | None, replace: bool = True) -> list[ListItem]:
+  def __set_items(self, items: list[ListItem[Id] | Id | str | tuple[Id, str] | None] | None, replace: bool = True) -> list[ListItem[Id]]:
     if items == None:
       return self.__set_items(self.__default_items)
 
-    new_items: list[ListItem] = [] if replace else self.items
+    new_items: list[ListItem[Id]] = [] if replace else self.items
 
     for index in range(len(items)):
       item = items[index]
-      d = {  }
+      d: ListItem[Id]
       if type(item) is str:
-        d['id'] = item
-      elif type(item) is dict:
-        d = { **item }
-      if d.get('id') != None:
-        new_items.append(d)
+        d = ListItem(item)
+      elif type(item) is tuple:
+        d = ListItem(*item)
+      elif isinstance(item, ListItem):
+        d = item
+      else:
+        d = ListItem(item, str(item))
+
+      new_items.append(d)
     self.items = new_items
     
     return new_items
@@ -221,9 +228,9 @@ class List:
       return self.__current_index
     except KeyboardInterrupt:
       raise Exit
-  def get_value(self):
+  def get_value(self) -> Id | None:
     index = self.get_index()
-    return self.items[index].get('id')
+    return self.items[index].id
   def __show(self):
     if self.__ended: 
       return None
@@ -249,11 +256,11 @@ class List:
 
     longestItemSize = max(
         0, 
-        *[len(item.get('name') or item.get('id')) for item in self.items] 
+        *[len(item.name or item.id) for item in self.items] 
       ) if len(self.items) > 0 else 0
     for index in items:
       item = self.items[index]
-      value = item.get('name') or item.get('id')
+      value = item.name or item.id
       prefix = ((f'{index + 1}'.rjust(len(str(len(items)))) + '.' if self.ordered else '-') + ' ' if not self.horizontal else '') if self.list_prefix else ''
       is_selected = index in self.selected
       is_current_index = index == self.__current_index

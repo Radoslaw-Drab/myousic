@@ -53,7 +53,7 @@ def init(search: str | None = None, *, config: Config) -> TrackExtended | None:
   def get_date(date: str):
     return datetime.strptime(date, "%Y-%m-%dT%H:%M:%SZ")
   
-  def sort_results(sort_by: str | None, sort_type: Sort.Type = Sort.Type.ASC):
+  def sort_results(sort_by: str | None, sort_type: Sort.Type = Sort.Type.ASC) -> list[List.Item]:
     from tabulate import tabulate
     data: list[dict[str, int | dict]] = []
     sorted_results = sorted(results, key=lambda d: d[config.get_sort_key(sort_by)], reverse=sort_type == Sort.Type.DESC) if sort_by != None else results
@@ -73,7 +73,7 @@ def init(search: str | None = None, *, config: Config) -> TrackExtended | None:
       })
     table = tabulate([[value for value in d.get('values').values()] for d in data], tablefmt='presto', maxcolwidths=[None, 30, 30, 20, None])
     lines = re.split(r'\n(?=^ *\d+)', table, flags=re.MULTILINE)
-    return [{"id": str(data[index].get('id')), "name": lines[index]} for index in range(len(lines))]
+    return [List.Item(str(data[index].get('id')), lines[index]) for index in range(len(lines))]
 
   title = f"Select for {Color.get_color(search, Color.PRIMARY)}"
   options = sort_results(None, Sort.Type.ASC)

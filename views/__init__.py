@@ -1,5 +1,5 @@
 from pathlib import Path
-
+from typing import Literal
 from uuid import uuid4
 
 from views.search import init as search
@@ -22,12 +22,12 @@ def init():
   config.set_key('output_folder', config.data.output_folder)
   
   try:
-    id = List([
-      {"id": "search-download", "name": "Search and Download"}, 
-      {"id": "search", "name": "Search"}, 
-      {"id": "download", "name": "Download"}, 
-      # {"id": "settings", "name": "Settings"}, 
-      {"id": "exit", "name": "Exit"}
+    id = List[Literal['search-download', 'search', 'download', 'settings', 'exit']]([
+      List.Item("search-download", "Search and Download"), 
+      List.Item("search", "Search"), 
+      List.Item("download", "Download"), 
+      # List.Item("settings", "Settings"), 
+      List.Item("exit", "Exit")
     ], 
     ordered=False, title=Color.get_color('Myousic', Color.PRIMARY)).get_value()
     
