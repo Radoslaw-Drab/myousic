@@ -7,16 +7,17 @@ from views.download import init as download
 from views.bare_download import init as bare_download
 from views.settings import init as settings
 
-from utils import Exit
 from utils.config import Config
+from utils.args import Args
 from utils.views import search_menu, input_url
 from utils.prompt import clear, List, Color
+from utils import Exit
 
 def init():
   clear()
-  config = Config(Path.home())
+  args = Args()
+  config = Config(args.config_path)
   config.set_key('id', uuid4())
-  config.set_key('itunes_api_url', 'https://itunes.apple.com/search')
   config.set_key('temp_folder', config.data.temp_folder)
   config.set_key('output_folder', config.data.output_folder)
   
