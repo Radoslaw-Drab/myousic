@@ -11,7 +11,7 @@ from utils.prompt import List, Color, clear
 from type.Config import Sort
 
 
-def init(search: str | None, *, config: Config) -> TrackExtended | None:
+def init(search: str | None = None, *, config: Config) -> TrackExtended | None:
   clear()
   
   if search == None:

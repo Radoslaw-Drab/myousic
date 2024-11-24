@@ -30,8 +30,6 @@ def init(config: Config, url: str):
         { "id": 'exit', "name": 'Exit' }
       ], before_screen=before_screen, horizontal=True).get_value()
     download = id == 'download'
-    get_lyrics = id != 'download-lyrics'
-    get_genres = id != 'download-genres'
     
     if id == 'exit' or id == None:
       return False
@@ -40,14 +38,12 @@ def init(config: Config, url: str):
       try:
         file_info = SimpleNamespace(**ydl.extract_info(url, download=download))
         t.set_ext(file_info.audio_ext)
-        t.metadata(get_lyrics=get_lyrics, get_genres=get_genres)
+        t.metadata()
       except DownloadError as error:
-        print("Couldn't download file: " + error)
-        Confirm().start(False)
+        Confirm(before=f"Couldn't download file: {error}").start()
         return False
       except Exception as error:
-        print(error)
-        Confirm().start(False)
+        Confirm(before=error).start()
         return False
       
     clear()
