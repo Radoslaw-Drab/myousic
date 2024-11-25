@@ -1,3 +1,4 @@
+from typing import TypeVar
 from prompt_toolkit import PromptSession
 from prompt_toolkit.formatted_text import HTML
 from tabulate import tabulate
@@ -41,6 +42,24 @@ class Input:
           continue
         
         self.__values.append(Color.remove_color(value))
+      if clear_screen:
+        clear()
       return self.__values
     except KeyboardInterrupt:
       raise Exit
+
+V = TypeVar("V", int, str)
+def default_input(name: str, value: V | None = None) -> V:
+  '''
+  Parameters:
+    name (`str`): input name
+    value (`V | None`): default value
+
+  Returns:
+    `V` - same type as value
+  '''
+  [v] = Input(
+    name, 
+    (f'{'New' if value else 'Set'} value: ', Color.get_color(str(value or ''), Color.GREY))
+  ).start()
+  return v or value if type(value) is str else int(v) or value
