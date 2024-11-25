@@ -60,6 +60,7 @@ def default_input(name: str, value: V | None = None) -> V:
   '''
   [v] = Input(
     name, 
-    (f'{'New' if value else 'Set'} value: ', Color.get_color(str(value or ''), Color.GREY))
+    (f'{'New' if value else 'Set'}: ', Color.get_color(str(value or ''), Color.GREY))
   ).start()
-  return v or value if type(value) is str else int(v) or value
+
+  return int(v) or value if type(value) is int else v or value
