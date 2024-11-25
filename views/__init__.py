@@ -28,7 +28,7 @@ def init():
       List.Item("search", "Search"), 
       List.Item("download", "Download"), 
       List.Item("lyrics", "Lyrics"), 
-      # List.Item("settings", "Settings"), 
+      List.Item("settings", "Settings"), 
       List.Item("exit", "Exit")
     ], 
     ordered=False, title=Color.get_color('Myousic', Color.PRIMARY)).get_value()

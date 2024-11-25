@@ -3,8 +3,9 @@ from prompt_toolkit import PromptSession
 from tabulate import tabulate
 
 from utils import Exit
-from utils.prompt import clear, List, Input, Color
+from utils.prompt import clear, List, Input, Color, default_input
 from utils.config import Config
+from utils.classes import Obj
 
 key_names = {
   'temp_folder': 'Temporary folder',
@@ -22,29 +23,27 @@ key_names = {
 def init(config: Config):
   clear()
   ps = PromptSession()
-  data = config.get_data_json()
-  keys = [*data.keys()]
+  data = config.get_data()
   
-  table_options: list[str] = []
+  table_options: list[dict[str, any]] = []
 
-  for index in range(len(keys)):
-    key = keys[index]
-    
-    table_options.append(
-      [
-        index + 1, 
-        get_name(key), 
-            data[key] 
-          if type(data[key]) is not list else
-            ' | '.join(data[key][:3]) + ' | ...' 
-        if type(data[key]) is not dict else
-          '--- Object ---'
-      ]
-    )
-  table = tabulate(table_options, tablefmt='presto').split('\n')
+  for key in Obj.get_attributes(data):
+    value = getattr(data, key)
+
+    name = get_name(key)
+    option = { "key": key, "list": [] }
+    if type(value) is list:
+      option['list'] = [name, value[:3]]
+    elif type(value) is dict:
+      option['list'] = [name, '{ ... }']
+    else:
+      option['list'] = ([name, value])
+    table_options.append(option)
+
+  table = tabulate([opt.get('list') for opt in table_options], tablefmt='presto', showindex=True).split('\n')
   
   options = [
-    { "id": keys[index], "name": table[index] } 
+    (table_options[index].get('key'), table[index])
     for index in range(len(table))
   ]
 
@@ -53,8 +52,8 @@ def init(config: Config):
     
     if key == None:
       return init(config)
-
-    setting(config, key, data[key])
+    
+    setting(config, key, getattr(data, key))
     
     init(config)
   except Exit: 
@@ -67,9 +66,9 @@ def setting(config: Config, key: str, value: any):
   try: 
     action = List[Literal['change', 'reset', 'exit']](
       [
-        List.Item("change", "Change"),
-        List.Item("reset", "Reset to default"),
-        List.Item("exit", "Exit")
+        ("change", "Change"),
+        ("reset", "Reset to default"),
+        ("exit", "Exit")
       ], 
       name, horizontal=True).get_value()
     
@@ -82,19 +81,13 @@ def setting(config: Config, key: str, value: any):
         except Exit:
           return setting(config, key, value)
       case 'reset':
-        v = config.default_config_type.get('key')
+        v = getattr(config.AppConfig(), key)
         config.set_data(key, v)
         return v
   except Exit:
     return
   
 def input_by_type(config: Config, key: str, value: any, extra_data: dict = {}):
-  def default_input(name: str, value: str):
-    [v] = Input(
-      name, 
-      ('New value: ', Color.get_color(value, Color.GREY))
-    ).start()
-    return v if type(value) is str else int(v)
   name = Color.get_color(get_name(key), Color.PRIMARY)
   if type(value) is bool:
     clear()
