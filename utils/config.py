@@ -7,6 +7,7 @@ from type.Config import AppConfig, UrlModifier
 
   
 class Config:
+  AppConfig = AppConfig
   def __init__(self, path: Path = Path(Path.home(), 'myousic.json')):
     self.path = path
     self.data = AppConfig()
@@ -25,8 +26,8 @@ class Config:
       return app_config
 
   def set_data[T](self, key: str, value: T):
-    if key not in Obj.get_attributes(self):
-      raise ValueError(f'Invalid {key} key')
+    if key not in Obj.get_attributes(self.data):
+      raise ValueError(f'Key not found: {key}')
     
     setattr(self.data, key, value)
     self.update_config()
