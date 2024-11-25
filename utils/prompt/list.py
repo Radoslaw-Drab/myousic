@@ -52,6 +52,10 @@ class List(Generic[Id]):
       default_action_index: int = 0,
       default_index: int = 0
       ):
+    '''
+    Parameters:
+      actions: `list[tuple[str, str, bool]]` - List with tuples where: `[action_id, name, disabled]`
+    '''
     self.items: list[ListItem[Id]] = self.__set_items(items)
     self.__default_items = self.__set_items(items)
     self.selected = []
@@ -98,9 +102,10 @@ class List(Generic[Id]):
     ])))
 
     self.__init_bindings()
-    self.__set_action(0)
+    self.__set_action(1)
+    self.__set_action(-1)
     
-  def __init_bindings(self):
+  def __init_bindings(self) -> None:
     @self.__bindings.add('enter')
     def _(e): 
       self.__set_ended(True)
@@ -126,7 +131,7 @@ class List(Generic[Id]):
       for key in self.custom_bindings:
         self.__bindings.add(*key.split(' '))(lambda event: self.__custom_binding_event(event))
     
-  def __custom_binding_event(self, event: KeyPressEvent):
+  def __custom_binding_event(self, event: KeyPressEvent) -> None:
     self.__buffer.insert_text(event_key)
     keys = self.custom_bindings.keys()
     event_key = ' '.join([k.key for k in event.key_sequence])
@@ -136,19 +141,23 @@ class List(Generic[Id]):
     binding = self.custom_bindings[event_key]
     
     if self.__on_custom_binding: self.__on_custom_binding(event_key, self.items, self.__current_index)
-    (name, desc, func) = binding
+    (_, _, func) = binding
     self.__set_items(func(self.items, self.__current_index))
     self.__show()
 
-  def __get_custom_bindings_names(self):
+  def __get_custom_bindings_names(self) -> list[tuple[str, str]]:
+    '''
+    Returns:
+      `list[tuple[str, str]]` - `list[tuple[key_name, description]]`
+    '''
     l: list[tuple[str, str]] = []
     for key in self.custom_bindings:
       binding = self.custom_bindings[key]
-      (key_name, key_type, func) = binding
+      (key_name, key_type, _) = binding
       l.append((key_name, key_type))
     return l
 
-  def __update_root(self, container: AnyContainer | Callable[[AnyContainer], AnyContainer]):
+  def __update_root(self, container: AnyContainer | Callable[[AnyContainer], AnyContainer]) -> None:
     if isinstance(container, AnyContainer):
       self.__root = container
     else:
@@ -176,7 +185,7 @@ class List(Generic[Id]):
     
     return new_items
   
-  def __up(self):
+  def __up(self) -> None:
     if self.loop:
       self.__current_index -= 1
       if self.__current_index < 0:
@@ -184,7 +193,7 @@ class List(Generic[Id]):
     else:
       self.__current_index = clamp(self.__current_index - 1, 0, len(self.items) - 1)
     self.__show()
-  def __down(self):
+  def __down(self) -> None:
     if self.loop:
       self.__current_index += 1
       if self.__current_index >= len(self.items):
@@ -192,31 +201,37 @@ class List(Generic[Id]):
     else:
       self.__current_index = clamp(self.__current_index + 1, 0, len(self.items) - 1)
     self.__show()
-  def __select_current(self):
+  def __select_current(self) -> None:
     self.__select(self.__current_index)
-  def __select(self, index: int): 
+  def __select(self, index: int) -> None: 
     if index in self.selected:
       self.selected = list(filter(lambda i: i != index, self.selected))
     else:
       self.selected.append(index)
     self.__show()
-  def select_all_toggle(self):
+  def select_all_toggle(self) -> None:
     if len(self.selected) == len(self.items):
       self.selected = []
     else:
       self.selected = [i for i in range(len(self.items))]
     self.__show()
       
-  def __toggle_show_info(self):
+  def __toggle_show_info(self) -> None:
     self.__show_info = not self.__show_info
     self.__show()
-  def __set_ended(self, value: bool):
+  def __set_ended(self, value: bool) -> None:
     self.__ended = value
   
-  def get_action(self):
+  def get_action(self) -> tuple[int, str, int]:
+    '''
+    Returns current action
+
+    Returns:
+      `tuple[int, str, int]` - `tuple[current_item_index, current_action_id, current_action_index]`
+    '''
     index = self.get_index()
     return (index, self.actions[self.__current_action_index][0], self.__current_action_index)
-  def get_index(self):
+  def get_index(self) -> int:
     try:
       self.__show()
   
@@ -231,7 +246,7 @@ class List(Generic[Id]):
   def get_value(self) -> Id | None:
     index = self.get_index()
     return self.items[index].id
-  def __show(self):
+  def __show(self) -> None:
     if self.__ended: 
       return None
     
@@ -283,7 +298,7 @@ class List(Generic[Id]):
     # self.__buffer.reset()
     self.__buffer.insert_text(text, True)
   
-  def __get_controls(self):
+  def __get_controls(self) -> None:
     def get(text: str):
       return Color.get_color(text, Color.GREY)
     data: list[list[str]] = []
@@ -310,7 +325,7 @@ class List(Generic[Id]):
     
     table = tabulate(data, tablefmt='plain')
     self.__controls.formatted_text_control.text = HTML(table)
-  def __get_info(self):
+  def __get_info(self) -> None:
     text = ''
     try:
       if self.before_screen != None:
@@ -346,18 +361,18 @@ class List(Generic[Id]):
     except Exception as error:
       self.__header.formatted_text_control.text = Color.get_color(str(error), Color.ERROR) + '\n\n' + text
 
-  def __set_action(self, value: int = 1):
-    if len(self.actions) <= 0:
+  def __set_action(self, value: int = 1) -> None:
+    if len(self.actions) <= 0 or all([action[2] == False for action in self.actions]):
       return
     self.__current_action_index += value
     if self.__current_action_index >= len(self.actions):
       self.__current_action_index = 0
     if self.__current_action_index < 0:
       self.__current_action_index = len(self.actions) - 1
-    if self.actions[self.__current_action_index][2] == False:
-      return self.__set_action()
+    if self.actions[self.__current_action_index][2] == False and value != 0:
+      return self.__set_action(value)
     self.__show()
-  def __change_sort(self, step: int = 1):
+  def __change_sort(self, step: int = 1) -> None:
     self.sort_type_index += max(min(step, 1), -1)
     if self.sort_type_index >= len(self.sort_types):
       self.sort_type_index = -1
@@ -365,7 +380,7 @@ class List(Generic[Id]):
       self.sort_type_index = len(self.sort_types) - 1
     self.__set_items(self.__sort_listener.emit(self.sort_types[self.sort_type_index], self.sort_dir))
     self.__show()
-  def __change_sort_dir(self):
+  def __change_sort_dir(self) -> None:
     if self.sort_type_index != -1:  
       if self.sort_dir == Sort.Type.ASC:
         self.sort_dir = Sort.Type.DESC
@@ -373,5 +388,5 @@ class List(Generic[Id]):
         self.sort_dir = Sort.Type.ASC
       self.__set_items(self.__sort_listener.emit(self.sort_types[self.sort_type_index], self.sort_dir))
       self.__show()
-  def set_sort_listener(self, listener: ListSortFunction | None):
+  def set_sort_listener(self, listener: ListSortFunction | None) -> None:
     self.__sort_listener.set(listener)
