@@ -17,6 +17,7 @@ from utils import Exit
 from type.Config import Sort
 
 Id = TypeVar('Id', default=str)
+ActionId = TypeVar('ActionId', default=str)
 class ListItem(Generic[Id]):
   def __init__(self, id: Id, name: str | None = None) -> None:
     self.id = id
@@ -29,7 +30,7 @@ class CustomBindingFunction(Callable[[list[ListItem[Id] | Id | str], int], list[
 class CustomBinding(tuple[str, str, CustomBindingFunction]):
   pass
 
-class List(Generic[Id]):
+class List(Generic[Id], Generic[ActionId]):
   Item = ListItem
   def __init__(self, 
       items: list[ListItem[Id] | Id | str | tuple[Id, str] | None], 
@@ -48,13 +49,13 @@ class List(Generic[Id]):
       list_prefix: bool = True, 
       custom_bindings: dict[str, CustomBinding] = {},
       on_custom_binding: Callable[[str, list[ListItem[Id]], int], None] = None,
-      actions: list[tuple[str, str, bool]] = [],
+      actions: list[tuple[ActionId, str, bool]] = [],
       default_action_index: int = 0,
       default_index: int = 0
       ):
     '''
     Parameters:
-      actions: `list[tuple[str, str, bool]]` - List with tuples where: `[action_id, name, disabled]`
+      actions: `list[tuple[ActionId, str, bool]]` - List with tuples where: `[action_id, name, disabled]`
     '''
     self.items: list[ListItem[Id]] = self.__set_items(items)
     self.__default_items = self.__set_items(items)
@@ -222,12 +223,12 @@ class List(Generic[Id]):
   def __set_ended(self, value: bool) -> None:
     self.__ended = value
   
-  def get_action(self) -> tuple[int, str, int]:
+  def get_action(self) -> tuple[int, ActionId, int]:
     '''
     Returns current action
 
     Returns:
-      `tuple[int, str, int]` - `tuple[current_item_index, current_action_id, current_action_index]`
+      `tuple[int, ActionId, int]` - `tuple[current_item_index, current_action_id, current_action_index]`
     '''
     index = self.get_index()
     return (index, self.actions[self.__current_action_index][0], self.__current_action_index)
