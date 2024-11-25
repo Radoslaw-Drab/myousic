@@ -18,7 +18,7 @@ class EditableList(Generic[V]):
   def init(self) -> list[V]:
     clear()
     try:
-      (index, action, action_index) = List(
+      (index, action, action_index) = List[V, Literal['add-below', 'add-above', 'move-up', 'move-down', 'edit', 'remove', 'save', 'no-save']](
       self.__value, 
       self.__title,
       default_index=self.__default_index,

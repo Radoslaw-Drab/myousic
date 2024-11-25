@@ -30,7 +30,7 @@ class CustomBindingFunction(Callable[[list[ListItem[Id] | Id | str], int], list[
 class CustomBinding(tuple[str, str, CustomBindingFunction]):
   pass
 
-class List(Generic[Id], Generic[ActionId]):
+class List(Generic[Id, ActionId]):
   Item = ListItem
   def __init__(self, 
       items: list[ListItem[Id] | Id | str | tuple[Id, str] | None], 
