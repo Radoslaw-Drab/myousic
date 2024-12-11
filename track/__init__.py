@@ -274,12 +274,8 @@ class TrackExtended:
       with urllib.request.urlopen(artwork_url) as url:
         with open(artwork_image_filename, 'wb') as f:
           f.write(url.read())
-    artwork_image = None
-    if artwork_url:
-      with open(artwork_image_filename, 'rb') as file:
-        artwork_image = file
-    date = str(self.get_date())
     
+    date = str(self.get_date())
 
     audio = music_tag.load_file(self.get_temp_audio_path())
     audio['title'] = self.value.trackName
@@ -293,8 +289,9 @@ class TrackExtended:
     audio['disc-number'] = self.value.discNumber or 1
     audio['total-discs'] = self.value.discCount or 1
     audio['year'] = date 
-    if artwork_image:
-      audio['artwork'] = artwork_image.read()
+    if artwork_url:
+      with open(artwork_image_filename, 'rb') as file:
+        audio['artwork'] = file.read()
 
     audio.save()
 
