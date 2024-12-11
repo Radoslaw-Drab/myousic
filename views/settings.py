@@ -3,7 +3,7 @@ from prompt_toolkit import PromptSession
 from tabulate import tabulate
 
 from utils import Exit
-from utils.prompt import clear, List, Input, Color, default_input
+from utils.prompt import clear, List, Color, default_input, EditableList, 
 from utils.config import Config
 from utils.classes import Obj
 
@@ -87,55 +87,16 @@ def setting(config: Config, key: str, value: any):
   except Exit:
     return
   
-def input_by_type(config: Config, key: str, value: any, extra_data: dict = {}):
+def input_by_type(config: Config, key: str, value: any):
   name = Color.get_color(get_name(key), Color.PRIMARY)
   if type(value) is bool:
     clear()
     v = List([True, False], name + ': ' + str(value), horizontal=True).get_value()
     return v == True
   if type(value) is int or type(value) is str:
-    return default_input(name, value)
+    return default_input((name, value))
   if type(value) is list:
-    clear()
-    default_index: int = extra_data.get('default_index') if extra_data.get('default_index') != None else -1
-    default_action_index: int = extra_data.get('default_action_index') if extra_data.get('default_action_index') != None else 0
-  
-    (index, action, action_index) = List(
-    value, 
-    name,
-    default_index=default_index,
-    default_action_index=default_action_index,
-    actions=[
-      ('add-below', 'Add below', True), 
-      ('add-above', 'Add above', True), 
-      ('move-up', 'Move up', len(value) > 0), 
-      ('move-down', 'Move down', len(value) > 0), 
-      ('edit', 'Edit', len(value) > 0), 
-      ('remove', 'Remove', len(value) > 0),
-      ('save', 'Save', True)
-    ]).get_action()
-    extra_data['default_action_index'] = action_index
-    if action == 'add-below':
-      value.insert(index + 1, default_input(name, ''))
-      extra_data['default_index'] = -1
-    if action == 'add-above':
-      value.insert(index, default_input(name, ''))
-      extra_data['default_index'] = -2
-    if action == 'edit':
-      value[index] = default_input(name, value[index])
-      extra_data['default_index'] = index
-    if action == 'remove':
-      value = [*value[:index], *value[index + 1:]]
-    if action == 'move-up' and index - 1 >= 0:
-      value = [*value[:index - 1], value[index], value[index - 1], *value[index + 1:]]
-      extra_data['default_index'] = max(index - 1, 0)
-    if action == 'move-down' and index + 1 < len(value):
-      value = [*value[:index], value[index + 1], value[index], *value[index + 2:]]
-      extra_data['default_index'] = index + 1
-    if action == 'save':
-      return value
-
-    return input_by_type(config, key, value, extra_data)
+    return EditableList(name, value).init()
   if type(value) is dict:
     print('Not implemented')
     input()
