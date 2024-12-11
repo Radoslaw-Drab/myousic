@@ -20,7 +20,7 @@ def init(config: Config, url: str):
     date = str(datetime.strptime(info.get('upload_date'), '%Y%m%d').year)
   
   def placeholder(text: str):
-    return Color.get_color(text, Color.ColorType.GREY)
+    return Color.get_color(text, Color.GREY)
   try:
     track.get_missing({
       'artistName': ('Artist', placeholder(artist)),

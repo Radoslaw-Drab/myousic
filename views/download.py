@@ -14,6 +14,7 @@ def init(config: Config, url: str):
   t = search(term, config=config)
   if t == None:
     return False
+  
   valid_lyrics = t.valid_lyrics()
   valid_genres = t.valid_genres()
   table = t.get_table()
