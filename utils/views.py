@@ -25,9 +25,10 @@ def get_artist_track(config: Config, url: str) -> tuple[str, str]:
   formattedTitle = re.sub(' x ', ', ', re.sub('(\\[|\\().*(\\]|\\))', '', title))
 
   artist_match = re.match(r'.*(?= - )', formattedTitle)
-
   if artist_match and info.get('artist') != None:
     artist = artist_match.string
+
+  formattedTitle = re.sub(f'{artist}.*- *', '', formattedTitle)
 
   title_split = formattedTitle.split('-')
 
