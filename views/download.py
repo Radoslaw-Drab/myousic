@@ -12,7 +12,7 @@ def init(config: Config, url: str):
   ydl = config.youtube_dl()
   term = get_info_term(config, url)
   t = search(term, config=config)
-  if t == None:
+  if t is None:
     return False
   
   valid_lyrics = t.valid_lyrics()

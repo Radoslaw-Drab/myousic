@@ -1,9 +1,8 @@
 from typing import Literal
-from prompt_toolkit import PromptSession
 from tabulate import tabulate
 
 from utils import Exit
-from utils.prompt import clear, List, Color, default_input, EditableList, 
+from utils.prompt import clear, List, Color, default_input, EditableList, EditableDict
 from utils.config import Config
 from utils.classes import Obj
 
@@ -17,12 +16,12 @@ key_names = {
   'genres_modifiers': 'Modifier in genres (RegEx)',
   'lyrics_modifiers': 'Modifier in lyrics (RegEx)',
   'lyrics_url_modifiers': 'Modifier in lyrics url (RegEx)',
-  'genres_url_modifiers': 'Modifier in genres url (RegEx)'
+  'genres_url_modifiers': 'Modifier in genres url (RegEx)',
+  'lyrics_provider': 'Lyrics provider'
 }
 
 def init(config: Config):
   clear()
-  ps = PromptSession()
   data = config.get_data()
   
   table_options: list[dict[str, any]] = []
@@ -50,7 +49,7 @@ def init(config: Config):
   try:
     key = List(options, 'Settings', list_prefix=False).get_value()
     
-    if key == None:
+    if key is None:
       return init(config)
     
     setting(config, key, getattr(data, key))
@@ -94,7 +93,7 @@ def input_by_type(config: Config, key: str, value: any):
     v = List([True, False], name + ': ' + str(value), horizontal=True).get_value()
     return v == True
   if type(value) is int or type(value) is str:
-    return default_input((name, value))
+    return default_input(name, value)
   if type(value) is list:
     return EditableList(name, value).init()
   if type(value) is dict:

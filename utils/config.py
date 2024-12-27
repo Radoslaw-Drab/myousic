@@ -55,19 +55,19 @@ class Config:
     return self.__modify_by_regex(UrlModifier.Prop.GENRES, key, text)
   def modify_lyrics(self, key: UrlModifier.Key, text: str):
     return self.__modify_by_regex(UrlModifier.Prop.LYRICS, key, text)
-  def __modify_by_regex(self, type: UrlModifier, key: UrlModifier.Key, text: str):
+  def __modify_by_regex(self, type: UrlModifier.Prop, key: UrlModifier.Key, text: str):
     new_text = text
     modifier: UrlModifier = getattr(self.data, type.value)
-    if modifier == None:
+    if modifier is None:
       return new_text
 
-    regExs: dict[str, str] | None = modifier.get(key.value)
+    reg_exs: dict[str, str] | None = modifier.get(key.value)
 
-    if regExs == None or len(regExs.keys()) == 0:
+    if reg_exs is None or len(reg_exs.keys()) == 0:
       return new_text
     
-    for regEx in regExs.keys():
-      new_text = re.sub(regEx, regExs[regEx], new_text)
+    for reg_ex in reg_exs.keys():
+      new_text = re.sub(reg_ex, reg_exs[reg_ex], new_text)
 
     return new_text
     
@@ -76,7 +76,7 @@ class Config:
     temp_folder = self.keys.temp_folder
     
 
-    if id == None:
+    if id is None:
       raise ValueError('No ID set')
     
     from yt_dlp import YoutubeDL

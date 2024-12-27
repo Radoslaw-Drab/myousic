@@ -12,7 +12,7 @@ def init(config: Config) -> None:
   term = search_menu()
   track = search(term, config=config)
 
-  if track == None:
+  if track is None:
     Confirm(before=Color.get_color(f"Couldn't find track for {term}", Color.ERROR)).start()
     return
 
