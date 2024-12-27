@@ -54,12 +54,9 @@ class List(Generic[Id, ActionId]):
       default_index: int = 0
       ):
     """
-    '''
     Parameters:
       actions: `list[tuple[ActionId, str, bool]]` - List with tuples where: `[action_id, name, enabled]`
     """
-      actions: `list[tuple[ActionId, str, bool]]` - List with tuples where: `[action_id, name, disabled]`
-    '''
     self.items: list[ListItem[Id]] = self.__set_items(items)
     self.__default_items = self.__set_items(items)
     self.selected = []
@@ -123,7 +120,6 @@ class List(Generic[Id, ActionId]):
       self.__bindings.add('c-a')(lambda e: self.select_all_toggle())
     
     if self.sort_types is not None and len(self.sort_types) > 0:
-    if self.sort_types != None and len(self.sort_types) > 0:
       self.__bindings.add('s-up')(lambda e: self.__change_sort())
       self.__bindings.add('s-down')(lambda e: self.__change_sort(-1))
       self.__bindings.add('s-tab')(lambda e: self.__change_sort_dir())
@@ -137,9 +133,9 @@ class List(Generic[Id, ActionId]):
         self.__bindings.add(*key.split(' '))(lambda event: self.__custom_binding_event(event))
     
   def __custom_binding_event(self, event: KeyPressEvent) -> None:
+    event_key = ' '.join([k.key for k in event.key_sequence])
     self.__buffer.insert_text(event_key)
     keys = self.custom_bindings.keys()
-    event_key = ' '.join([k.key for k in event.key_sequence])
     if event_key not in keys:
       return
 
@@ -152,11 +148,9 @@ class List(Generic[Id, ActionId]):
 
   def __get_custom_bindings_names(self) -> list[tuple[str, str]]:
     """
-    '''
     Returns:
       `list[tuple[str, str]]` - `list[tuple[key_name, description]]`
     """
-    '''
     l: list[tuple[str, str]] = []
     for key in self.custom_bindings:
       binding = self.custom_bindings[key]
@@ -171,7 +165,6 @@ class List(Generic[Id, ActionId]):
       self.__root = container(self.__root)
   def __set_items(self, items: list[ListItem[Id] | Id | str | tuple[Id, str] | None] | None, replace: bool = True) -> list[ListItem[Id]]:
     if items is None:
-    if items == None:
       return self.__set_items(self.__default_items)
 
     new_items: list[ListItem[Id]] = [] if replace else self.items
