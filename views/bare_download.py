@@ -28,7 +28,7 @@ def init(config: Config, url: str):
       'collectionName': ('Album', placeholder(title + ' - Single')),
       'releaseDate': ('Release Date', placeholder(date)),
       'primaryGenreName': 'Genre',
-      # 'artworkUrl100': ('Artwork URL', placeholder(info.get('thumbnail'))),
+      'artworkUrl100': ('Artwork URL', placeholder(info.get('thumbnail'))),
     })
     ydl.download(url)
     
