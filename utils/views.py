@@ -7,9 +7,9 @@ from utils.config import Config
 from utils.prompt import clear, Input, Color
 
 
-def search_menu(title: str | None = 'Search'):
+def search_menu(title: str | None = 'Search', default_artist: str | None = None, default_title: str | None = None):
   try:
-    [artist, title] = Input(title, 'Artist: ', 'Title: ').start()
+    [artist, title] = Input(title, ('Artist: ', default_artist), ('Title: ', default_title)).start()
     return f'{artist} - {title}'
   except Exit:
     return None

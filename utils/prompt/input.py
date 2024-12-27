@@ -8,7 +8,7 @@ from utils.prompt.generic import clear
 from utils import Exit
 
 class Input:
-  def __init__(self, title: str | None = None, *prompts: list[str | tuple[str, str]]):
+  def __init__(self, title: str | None = None, *prompts: list[str | tuple[str, str | None]]):
     self.__prompts: list[str | tuple[str, str]] = prompts
     self.__values: list[str] = []
     self.__title = title
@@ -29,16 +29,16 @@ class Input:
     try:
       for prompt in self.__prompts:
         padding = ''.ljust(padding_left)
-        value = padding
+        text = padding
         placeholder = None
         if type(prompt) == str:
-          value += prompt
+          text += prompt
         elif type(prompt) == tuple:
-          value += prompt[0]
+          text += prompt[0]
           placeholder = prompt[1]
-          
-        value = self.__ps.prompt(HTML(value), placeholder=HTML(placeholder) if placeholder else '') or placeholder or ''
-        if value == None:
+
+        value = self.__ps.prompt(HTML(text), placeholder=HTML(placeholder) if placeholder else '') or placeholder or ''
+        if value is None:
           continue
         
         self.__values.append(Color.remove_color(value))

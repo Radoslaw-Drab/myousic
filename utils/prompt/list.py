@@ -53,8 +53,11 @@ class List(Generic[Id, ActionId]):
       default_action_index: int = 0,
       default_index: int = 0
       ):
+    """
     '''
     Parameters:
+      actions: `list[tuple[ActionId, str, bool]]` - List with tuples where: `[action_id, name, enabled]`
+    """
       actions: `list[tuple[ActionId, str, bool]]` - List with tuples where: `[action_id, name, disabled]`
     '''
     self.items: list[ListItem[Id]] = self.__set_items(items)
@@ -119,6 +122,7 @@ class List(Generic[Id, ActionId]):
       self.__bindings.add('space')(lambda e: self.__select_current())
       self.__bindings.add('c-a')(lambda e: self.select_all_toggle())
     
+    if self.sort_types is not None and len(self.sort_types) > 0:
     if self.sort_types != None and len(self.sort_types) > 0:
       self.__bindings.add('s-up')(lambda e: self.__change_sort())
       self.__bindings.add('s-down')(lambda e: self.__change_sort(-1))
@@ -147,9 +151,11 @@ class List(Generic[Id, ActionId]):
     self.__show()
 
   def __get_custom_bindings_names(self) -> list[tuple[str, str]]:
+    """
     '''
     Returns:
       `list[tuple[str, str]]` - `list[tuple[key_name, description]]`
+    """
     '''
     l: list[tuple[str, str]] = []
     for key in self.custom_bindings:
@@ -164,6 +170,7 @@ class List(Generic[Id, ActionId]):
     else:
       self.__root = container(self.__root)
   def __set_items(self, items: list[ListItem[Id] | Id | str | tuple[Id, str] | None] | None, replace: bool = True) -> list[ListItem[Id]]:
+    if items is None:
     if items == None:
       return self.__set_items(self.__default_items)
 
@@ -223,15 +230,16 @@ class List(Generic[Id, ActionId]):
   def __set_ended(self, value: bool) -> None:
     self.__ended = value
   
-  def get_action(self) -> tuple[int, ActionId, int]:
-    '''
+  def get_action(self) -> tuple[int, Id, ActionId, int]:
+    """
     Returns current action
 
     Returns:
-      `tuple[int, ActionId, int]` - `tuple[current_item_index, current_action_id, current_action_index]`
-    '''
+      `tuple[int, Id, ActionId, int]` - `tuple[current_item_index, current_action_id, current_action_index]`
+    """
     index = self.get_index()
-    return (index, self.actions[self.__current_action_index][0], self.__current_action_index)
+    value = self.items[index].id
+    return index, value, self.actions[self.__current_action_index][0], self.__current_action_index
   def get_index(self) -> int:
     try:
       self.__show()
