@@ -21,18 +21,17 @@ def get_artist_track(config: Config, url: str) -> tuple[str, str]:
   artist: str = info.get('artist') or info.get('creator') or info.get('uploader')
   title: str = info.get('track') or info.get('fulltitle') or info.get('alt_title')
 
+  formatted_title = re.sub(' x ', ', ', re.sub('(\\[|\\().*(\\]|\\))', '', title))
 
-  formattedTitle = re.sub(' x ', ', ', re.sub('(\\[|\\().*(\\]|\\))', '', title))
-
-  artist_match = re.match(r'.*(?= - )', formattedTitle)
-  if artist_match and info.get('artist') != None:
+  artist_match = re.match(r'.*(?= - )', formatted_title)
+  if artist_match and info.get('artist') is not None:
     artist = artist_match.string
 
-  formattedTitle = re.sub(f'{artist}.*- *', '', formattedTitle)
+  formatted_title = re.sub(r'-', '', re.sub(artist, '', formatted_title, re.I)).strip()
 
-  title_split = formattedTitle.split('-')
+  title_split = formatted_title.split('-')
 
-  return (artist, formattedTitle) if re.search(artist.lower(), formattedTitle.lower()) != None or len(title_split) <= 1 else (title_split[0], *title_split[1:])
+  return (artist, formatted_title) if re.search(artist.lower(), formatted_title.lower()) is not None or len(title_split) <= 1 else (title_split[0], *title_split[1:])
   
 def get_info_term(config: Config, url: str):
   (artist, title) = get_artist_track(config, url)

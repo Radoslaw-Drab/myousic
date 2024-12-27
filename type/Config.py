@@ -25,6 +25,7 @@ class Sort(Enum):
     DESC = 'desc'
 
 LyricsProvider = Literal['AzLyrics', 'LyricsOvh', 'Lyrist']
+
 class AppConfig:
   temp_folder: str = str(Path.joinpath(Path.home(), 'tmp'))
   output_folder: str = str(Path.joinpath(Path.home(), "music"))

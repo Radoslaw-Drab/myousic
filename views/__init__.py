@@ -41,7 +41,7 @@ def init():
     if id == 'search':
       term = search_menu()
       track = search(term, config=config)
-      if track != None:
+      if track is not None:
         track.get_table(True)
     if id == 'search-download' and url:
       download(config, url)
@@ -51,7 +51,7 @@ def init():
       lyrics(config)
     if id == 'settings':
       settings(config)
-    if id == 'exit' or id == None:
+    if id == 'exit' or id is None:
       return
     init()
   except Exit:

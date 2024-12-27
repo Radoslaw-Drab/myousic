@@ -105,6 +105,8 @@ class TrackExtended:
         self.Lyrics = Lyrist()
       case 'LyricsOvh':
         self.Lyrics = LyricsOvh()
+      case _:
+        self.Lyrics = AzLyrics()
 
     self.Genre = Genre(
       excluded_genres=[f'^{self.value.primaryGenreName}$', *self.config.data.excluded_genres], 
