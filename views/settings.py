@@ -17,7 +17,7 @@ key_names = {
   'lyrics_modifiers': 'Modifier in lyrics (RegEx)',
   'lyrics_url_modifiers': 'Modifier in lyrics url (RegEx)',
   'genres_url_modifiers': 'Modifier in genres url (RegEx)',
-  'lyrics_provider': 'Lyrics provider'
+  'lyrics_provider': 'Lyrics provider (see docs)'
 }
 
 def init(config: Config):
