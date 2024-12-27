@@ -12,21 +12,21 @@ class Lyrics:
     self.__custom_url: str | None = None
     pass
   def get_url(self, artist: str, title: str):
-    return re.sub(r' ', '+', (self.lyrics_url + '/' + (urllib.parse.quote(artist + '/' + title)) if self.__custom_url == None else self.__custom_url).lower())
+    return re.sub(r' ', '+', (self.lyrics_url + '/' + (urllib.parse.quote(artist + '/' + title)) if self.__custom_url is None else self.__custom_url).lower())
   def get(self, artist: str, title: str) -> tuple[str | None, str]:
     url = self.get_url(artist, title)
     try:
       response = requests.get(url)
-      return (self.format(response.json()['lyrics']), url)
+      return self.format(response.json()['lyrics']), url
     except:
-      return (None, url)
+      return None, url
   def get_to_file(self, file: str, artist: str, title: str, custom_lyrics: str | None = None) -> tuple[str | None, str]:
-    (lyrics, url) = self.get(artist, title) if custom_lyrics == None else (custom_lyrics, '')
-    if lyrics != None:
+    (lyrics, url) = self.get(artist, title) if custom_lyrics is None else (custom_lyrics, '')
+    if lyrics is not None:
       with open(file, 'w', encoding='utf-8') as f:
         f.write(lyrics)
-      return (lyrics, url)
-    return (None, url)
+      return lyrics, url
+    return None, url
   def format(self, lyrics: str) -> str:
     return re.sub(r'^\n*', r'\n', re.sub(r'\n*\[.*\]', r'\n', lyrics), flags=re.NOFLAG)
   
@@ -45,20 +45,20 @@ class Genre:
     if len(self.excluded_genres) > 0 and len(self.included_genres) > 0:
       new_included = list(filter(lambda included: included not in self.excluded_genres , self.included_genres))
       for excluded in self.excluded_genres:
-        if re.match(excluded, genre) != None:
+        if re.match(excluded, genre) is not None:
           return False
       for included in new_included:
-        if re.search(included, genre) != None:
+        if re.search(included, genre) is not None:
           return True
       return False
     elif len(self.excluded_genres) > 0:
       for excluded in self.excluded_genres: 
-        if re.search(excluded, genre) == None:
+        if re.search(excluded, genre) is None:
           return True
       return False
     elif len(self.included_genres) > 0:
       for included in self.included_genres:
-        if re.search(included, genre) != None:
+        if re.search(included, genre) is not None:
           return True
       return False
     else:
@@ -66,10 +66,10 @@ class Genre:
   def parse(self, value: bool):
     self.__parse = value
   def __genres_modifiers(self, text: str):
-    newText = text
+    new_text = text
     for regex in self.modifiers.keys():
-      newText = re.sub(regex, self.modifiers[regex], newText)
-    return newText
+      new_text = re.sub(regex, self.modifiers[regex], new_text)
+    return new_text
   def get_url(self, artist: str, title: str) -> str:
     _artist = urllib.parse.quote_plus(artist) if self.__parse else re.sub('/$', '', re.sub('^/', '', artist))
     _title = urllib.parse.quote_plus(title) if self.__parse else re.sub('/$', '', re.sub('^/', '', title))
@@ -94,8 +94,8 @@ class Genre:
     return filtered
   def get_str(self, artist: str, title: str, prefix: str | None = None, suffix: str | None = None, splitter: str = ' '):
     new_str = ''
-    pre = prefix if prefix != None else ''
-    suf = suffix if suffix != None else ''
+    pre = prefix if prefix is not None else ''
+    suf = suffix if suffix is not None else ''
     genres = self.get(artist, title)
     if len(genres) == 0:
       return '-'

@@ -4,9 +4,12 @@ from datetime import datetime
 import re
 from pathlib import Path
 import urllib.request, urllib.parse
+from typing import Literal
+
 import music_tag
 from shutil import move, rmtree
 
+from track.lyrics import AzLyrics, LyricsOvh, Lyrist
 from utils.prompt import Input, Color, Confirm, clear
 from utils.config import Config
 from type.Config import UrlModifier
@@ -82,7 +85,7 @@ default_track: Track = {
   'isStreamable': None,
 }
 class TrackExtended:
-  def __init__(self, track: dict, audio_file_id: str, config: Config | None = None):
+  def __init__(self, track: dict, audio_file_id: str, config: Config | None = None, lyrics_provider: Literal['AzLyrics', 'LyricsOvh', 'Lyrist'] = 'AzLyrics'):
     default: Track = default_track.copy()
     default.update(**track)
     self.value_dict: dict = default
@@ -95,7 +98,14 @@ class TrackExtended:
     self.config = config
     self.audio_ext = None
     self.__is_saved = False
-    self.Lyrics = Lyrics()
+    match lyrics_provider:
+      case 'AzLyrics':
+        self.Lyrics = AzLyrics()
+      case 'Lyrist':
+        self.Lyrics = Lyrist()
+      case 'LyricsOvh':
+        self.Lyrics = LyricsOvh()
+
     self.Genre = Genre(
       excluded_genres=[f'^{self.value.primaryGenreName}$', *self.config.data.excluded_genres], 
       included_genres=self.config.data.included_genres,

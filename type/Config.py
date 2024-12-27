@@ -1,10 +1,11 @@
 from enum import Enum
 from pathlib import Path
 import json
+from typing import Literal
 
 from utils.classes import Obj
 
-class UrlModifier:
+class UrlModifier(dict):
   title: dict[str, str]
   artist: dict[str, str]
   class Key(Enum):
@@ -23,7 +24,8 @@ class Sort(Enum):
     ASC = 'asc'
     DESC = 'desc'
 
-class AppConfig():
+LyricsProvider = Literal['AzLyrics', 'LyricsOvh', 'Lyrist']
+class AppConfig:
   temp_folder: str = str(Path.joinpath(Path.home(), 'tmp'))
   output_folder: str = str(Path.joinpath(Path.home(), "music"))
   artwork_size: int = 1000
@@ -34,6 +36,7 @@ class AppConfig():
   lyrics_modifiers: dict[str, str] = {}
   lyrics_url_modifiers: UrlModifier = { "artist": {}, "title": {} }
   genres_url_modifiers: UrlModifier = { "artist": {}, "title": {} }
+  lyrics_provider: LyricsProvider = 'AzLyrics'
 
   class Keys(dict):
     from uuid import UUID
