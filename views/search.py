@@ -1,7 +1,10 @@
 import urllib
+from typing import Literal
+
 import requests
 from datetime import datetime
 import re
+import os
 
 from track import TrackExtended
 from utils import Exit
@@ -14,7 +17,7 @@ from type.Config import Sort
 def init(search: str | None = None, *, config: Config) -> TrackExtended | None:
   clear()
   
-  if search == None:
+  if search is None:
     return
   
   id = config.keys.id
@@ -71,7 +74,9 @@ def init(search: str | None = None, *, config: Config) -> TrackExtended | None:
           'year': year
         }
       })
-    table = tabulate([[value for value in d.get('values').values()] for d in data], tablefmt='presto', maxcolwidths=[None, 30, 30, 20, None])
+    main_size = max(os.get_terminal_size().columns / 3, 35)
+    second_size = max(os.get_terminal_size().columns / 3, 25)
+    table = tabulate([[value for value in d.get('values').values()] for d in data], tablefmt='presto', maxcolwidths=[None, main_size, main_size, second_size, None])
     lines = re.split(r'\n(?=^ *\d+)', table, flags=re.MULTILINE)
     return [List.Item(str(data[index].get('id')), lines[index]) for index in range(len(lines))]
 
@@ -79,22 +84,28 @@ def init(search: str | None = None, *, config: Config) -> TrackExtended | None:
   options = sort_results(None, Sort.Type.ASC)
   
   try:
-    index = List(
+    if len(options) <= 0: return
+    (_, index, action, _) = List[any, Literal['select', 'change']](
       options, 
       title, 
       sort_types=['title', 'artist', 'album', 'year'], 
       sort_listener=sort_results, 
       show_count=config.data.show_count,   
-      list_prefix=False          
-    ).get_value() if len(options) > 1 else 0
-    
-    if index == None: return
+      list_prefix=False,
+      actions=[('select', 'Select', True), ('change', 'Change search term', True)]
+    ).get_action()
+
+    if action == 'change':
+      return init(search=search_menu(f'Previous term: {Color.get_color(search, Color.PRIMARY)}\nNew search term', default_artist=search.split('-')[0].strip(), default_title=search.split('-')[1]).strip(), config=config)
+
+
+    if index is None: return
     result: dict | None = None
     for data in results:
       if str(data.get('trackId')) != index:
         continue
       result = data
-    if result == None:
+    if result is None:
       raise ValueError(f'Invalid {index} index')
 
     return TrackExtended(result, id, config=config)
