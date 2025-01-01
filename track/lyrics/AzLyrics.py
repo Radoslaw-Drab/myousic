@@ -10,7 +10,12 @@ class AzLyrics(Lyrics):
 		super().__init__(lyrics_url='https://www.azlyrics.com/lyrics/{artist}/{title}.html')
 
 	def get_url(self, artist: str, title: str) -> str:
-		return unidecode(self.lyrics_url.format(artist=re.sub(r' *', '', artist).lower(), title=re.sub(r' *', '', title).lower()))
+		def format_text(text: str) -> str:
+			return re.sub(r'[\[(].*[)\]]', '', re.sub(r'[ \'"]*', '', text)).lower()
+		return unidecode(self.lyrics_url.format(
+			artist=format_text(artist),
+			title=format_text(title))
+		)
 
 	def get(self, artist: str, title: str) -> tuple[str | None, str]:
 		url = self.get_url(artist, title)
