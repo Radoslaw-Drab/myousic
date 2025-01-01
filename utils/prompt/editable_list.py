@@ -10,8 +10,9 @@ V = TypeVar('V', default=str)
 class EditableList(Generic[V]):
   def __init__(self, title: str, value: list[V], editable_list: Self | None = None) -> None:
     self.__title = title
-    self.__value = value
-    self.__default_value = self.__value
+    self.__value = editable_list.__value if editable_list else value.copy()
+    self.__default_value = editable_list.__default_value if editable_list else self.__value.copy()
+
     self.__default_index: int = editable_list.__default_index if editable_list else 0
     self.__default_action_index: int = editable_list.__default_action_index if editable_list else 0
 
@@ -19,21 +20,26 @@ class EditableList(Generic[V]):
     clear()
     try:
       (index, _, action, action_index) = List[V, Literal['add-below', 'add-above', 'move-up', 'move-down', 'edit', 'remove', 'save', 'no-save']](
-      self.__value, 
+      self.__value,
       self.__title,
       default_index=self.__default_index,
       default_action_index=self.__default_action_index,
       actions=[
-        ('add-below', 'Add below', True), 
-        ('add-above', 'Add above', True), 
-        ('move-up', 'Move up', len(self.__value) > 0), 
-        ('move-down', 'Move down', len(self.__value) > 0), 
-        ('edit', 'Edit', len(self.__value) > 0), 
+        ('add-below', 'Add below', True),
+        ('add-above', 'Add above', True),
+        ('move-up', 'Move up', len(self.__value) > 0),
+        ('move-down', 'Move down', len(self.__value) > 0),
+        ('edit', 'Edit', len(self.__value) > 0),
         ('remove', 'Remove', len(self.__value) > 0),
         ('save', 'Save', True),
         ('no-save', 'Exit without saving', True)
       ]).get_action()
     except Exit:
+      return  self.__default_value
+
+    if action == 'no-save':
+      return self.__default_value
+    if action == 'save':
       return self.__value
 
     self.__default_action_index = action_index
@@ -55,7 +61,7 @@ class EditableList(Generic[V]):
     except Exit:
       pass
     if action == 'remove':
-      # Concats items before current index and after current index
+      # Concat items before current index and after current index
       self.__value = [*self.__value[:index], *self.__value[index + 1:]]
       # Changes default index for next frame to previous
       self.__default_index = max(self.__default_index - 1, 0)
@@ -69,10 +75,7 @@ class EditableList(Generic[V]):
       self.__value = [*self.__value[:index], self.__value[index + 1], self.__value[index], *self.__value[index + 2:]]
       # Changes default index for next frame to next
       self.__default_index = min(index + 1, len(self.__value) - 1)
-    if action == 'save':
-      return self.__value
-    if action == 'no-save': 
-      return self.__default_value
+
         
     return EditableList(self.__title, self.__value, self).init()
 

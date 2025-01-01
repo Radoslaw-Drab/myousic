@@ -231,7 +231,7 @@ class List(Generic[Id, ActionId]):
       `tuple[int, Id, ActionId, int]` - `tuple[current_item_index, current_action_id, current_action_index]`
     """
     index = self.get_index()
-    value = self.items[index].id
+    value = self.items[index].id if len(self.items) > 0 and self.items[index] else None
     return index, value, self.actions[self.__current_action_index][0], self.__current_action_index
   def get_index(self) -> int:
     try:

@@ -1,6 +1,7 @@
 import requests
 import re
 from bs4 import BeautifulSoup
+from unidecode import unidecode
 
 from track.track_data import Lyrics
 
@@ -9,7 +10,7 @@ class AzLyrics(Lyrics):
 		super().__init__(lyrics_url='https://www.azlyrics.com/lyrics/{artist}/{title}.html')
 
 	def get_url(self, artist: str, title: str) -> str:
-		return self.lyrics_url.format(artist=re.sub(r' *', '', artist).lower(), title=re.sub(r' *', '', title).lower())
+		return unidecode(self.lyrics_url.format(artist=re.sub(r' *', '', artist).lower(), title=re.sub(r' *', '', title).lower()))
 
 	def get(self, artist: str, title: str) -> tuple[str | None, str]:
 		url = self.get_url(artist, title)
@@ -17,6 +18,10 @@ class AzLyrics(Lyrics):
 		page = requests.get(url).text
 		bs = BeautifulSoup(page, 'html.parser')
 		html = bs.find('div', attrs={'class': 'ringtone'})
+
+		if html is None:
+			return None, url
+
 		name = html.find_next('b').contents[0].text.strip()
 		lyrics = html.find_next('div').text.strip()
 
